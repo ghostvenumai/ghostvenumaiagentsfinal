@@ -77,3 +77,5 @@ This repository is a living project and evolves as systems, ideas, and implement
 📫 Contact
 If you are interested in my work or would like to discuss system-, security-, or tooling-focused roles, feel free to reach out.
 Thank you for taking the time to review this repository.
+
+Serkan Iazurlo 

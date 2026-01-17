@@ -1,4 +1,3 @@
-Repository Overview
 This repository documents my work as a product-oriented systems and security engineer, demonstrated through hands-on, real-world projects.
 Rather than tutorials or demo code, this portfolio focuses on:
 practical system design and understanding
@@ -77,5 +76,3 @@ This repository is a living project and evolves as systems, ideas, and implement
 📫 Contact
 If you are interested in my work or would like to discuss system-, security-, or tooling-focused roles, feel free to reach out.
 Thank you for taking the time to review this repository.
-
-Serkan Iazurlo 

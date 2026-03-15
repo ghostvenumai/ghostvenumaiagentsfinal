@@ -9,6 +9,22 @@
 
 ---
 
+## Screenshots
+
+### 🔎 Classic Scan
+![Classic Scan](screenshots/classic-scan.png)
+
+### 🤖 Agent Mode — Live Analysis
+![Agent Mode Start](screenshots/agent-mode-start.png)
+
+### ✅ Agent Mode — Analysis Complete + Memory Diff
+![Agent Mode Done](screenshots/agent-mode-done.png)
+
+### 📊 History — Before/After Comparison
+![History Diff](screenshots/history-diff.png)
+
+---
+
 ## What is GhostVenumAI?
 
 GhostVenumAI is a **defensive network security tool** that combines Nmap scanning with autonomous AI agents powered by **Claude (Anthropic)**. It runs fully locally, has a modern web GUI and a CLI.

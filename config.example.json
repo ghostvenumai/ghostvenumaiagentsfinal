@@ -1,0 +1,9 @@
+{
+  "language": "de",
+  "openai_model": "gpt-4o-mini",
+  "claude_model": "claude-sonnet-4-6",
+  "target": "192.168.178.1",
+  "nmap_args": "-sS -T4 -v -sV",
+  "openai_key": "sk-proj-HIER_DEINEN_OPENAI_KEY_EINTRAGEN",
+  "anthropic_key": "sk-ant-HIER_DEINEN_ANTHROPIC_KEY_EINTRAGEN"
+}

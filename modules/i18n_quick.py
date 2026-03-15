@@ -1,0 +1,111 @@
+# modules/i18n_quick.py
+# Einfaches Mehrsprachigkeitsmodul: DE / EN / ES
+
+_STRINGS = {
+    "de": {
+        "app_title":         "GhostVenumAI v2.0 — Agent Edition",
+        "tab_classic":       "🔎 Classic Scan",
+        "tab_agents":        "🤖 Agent Mode",
+        "target_label":      "Ziel-IP / Hostname:",
+        "args_label":        "Nmap-Parameter:",
+        "btn_scan":          "▶ Scan starten",
+        "btn_gpt":           "🤖 GPT-Analyse",
+        "btn_sysinfo":       "📊 System-Info",
+        "btn_save":          "💾 Report speichern",
+        "btn_open_output":   "📂 Output öffnen",
+        "btn_set_key":       "🔑 API-Key setzen",
+        "btn_full_analysis": "▶ Vollanalyse starten",
+        "model_label":       "Modell:",
+        "lang_label":        "Sprache:",
+        "agent_recon":       "ReconAgent",
+        "agent_vuln":        "VulnAgent",
+        "agent_remed":       "RemediationAgent",
+        "msg_no_target":     "Bitte Ziel-IP eingeben.",
+        "msg_scan_start":    "Starte Nmap-Scan...",
+        "msg_scan_done":     "Scan abgeschlossen.",
+        "msg_gpt_start":     "Starte GPT-Analyse...",
+        "msg_gpt_done":      "GPT-Analyse gespeichert:",
+        "msg_gpt_nodata":    "Kein Scan-Output vorhanden.",
+        "msg_report_saved":  "Report gespeichert:",
+        "msg_no_key":        "Kein API-Key gesetzt.",
+        "msg_agents_start":  "Agent-Analyse gestartet für:",
+        "msg_agents_done":   "Analyse abgeschlossen.",
+        "dialog_key_title":  "OpenAI API-Key",
+        "dialog_key_prompt": "API-Key eingeben:",
+    },
+    "en": {
+        "app_title":         "GhostVenumAI v2.0 — Agent Edition",
+        "tab_classic":       "🔎 Classic Scan",
+        "tab_agents":        "🤖 Agent Mode",
+        "target_label":      "Target IP / Hostname:",
+        "args_label":        "Nmap Parameters:",
+        "btn_scan":          "▶ Start Scan",
+        "btn_gpt":           "🤖 GPT Analysis",
+        "btn_sysinfo":       "📊 System Info",
+        "btn_save":          "💾 Save Report",
+        "btn_open_output":   "📂 Open Output",
+        "btn_set_key":       "🔑 Set API Key",
+        "btn_full_analysis": "▶ Start Full Analysis",
+        "model_label":       "Model:",
+        "lang_label":        "Language:",
+        "agent_recon":       "ReconAgent",
+        "agent_vuln":        "VulnAgent",
+        "agent_remed":       "RemediationAgent",
+        "msg_no_target":     "Please enter a target IP.",
+        "msg_scan_start":    "Starting Nmap scan...",
+        "msg_scan_done":     "Scan complete.",
+        "msg_gpt_start":     "Starting GPT analysis...",
+        "msg_gpt_done":      "GPT analysis saved:",
+        "msg_gpt_nodata":    "No scan output available.",
+        "msg_report_saved":  "Report saved:",
+        "msg_no_key":        "No API key set.",
+        "msg_agents_start":  "Agent analysis started for:",
+        "msg_agents_done":   "Analysis complete.",
+        "dialog_key_title":  "OpenAI API Key",
+        "dialog_key_prompt": "Enter API key:",
+    },
+    "es": {
+        "app_title":         "GhostVenumAI v2.0 — Edición Agente",
+        "tab_classic":       "🔎 Escaneo Clásico",
+        "tab_agents":        "🤖 Modo Agente",
+        "target_label":      "IP / Hostname objetivo:",
+        "args_label":        "Parámetros Nmap:",
+        "btn_scan":          "▶ Iniciar Escaneo",
+        "btn_gpt":           "🤖 Análisis GPT",
+        "btn_sysinfo":       "📊 Info del Sistema",
+        "btn_save":          "💾 Guardar Reporte",
+        "btn_open_output":   "📂 Abrir Salida",
+        "btn_set_key":       "🔑 Establecer Clave API",
+        "btn_full_analysis": "▶ Iniciar Análisis Completo",
+        "model_label":       "Modelo:",
+        "lang_label":        "Idioma:",
+        "agent_recon":       "ReconAgent",
+        "agent_vuln":        "VulnAgent",
+        "agent_remed":       "RemediationAgent",
+        "msg_no_target":     "Por favor ingresa una IP objetivo.",
+        "msg_scan_start":    "Iniciando escaneo Nmap...",
+        "msg_scan_done":     "Escaneo completado.",
+        "msg_gpt_start":     "Iniciando análisis GPT...",
+        "msg_gpt_done":      "Análisis GPT guardado:",
+        "msg_gpt_nodata":    "No hay datos de escaneo disponibles.",
+        "msg_report_saved":  "Reporte guardado:",
+        "msg_no_key":        "No hay clave API configurada.",
+        "msg_agents_start":  "Análisis de agente iniciado para:",
+        "msg_agents_done":   "Análisis completo.",
+        "dialog_key_title":  "Clave API de OpenAI",
+        "dialog_key_prompt": "Ingresa la clave API:",
+    },
+}
+
+_current_lang = "de"
+
+def set_language(lang: str):
+    global _current_lang
+    if lang in _STRINGS:
+        _current_lang = lang
+
+def get(key: str) -> str:
+    return _STRINGS.get(_current_lang, _STRINGS["de"]).get(key, key)
+
+def available_languages():
+    return list(_STRINGS.keys())

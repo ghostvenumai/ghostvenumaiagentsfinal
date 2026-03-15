@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👻 GhostVenumAI v2.0 — Agent Edition</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">👻</span>
+        <span class="logo-text">GhostVenumAI</span>
+        <span class="logo-version">v2.0 Agent Edition</span>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-defensive">Defensiv</span>
+        <span id="badge-openai"  class="badge badge-key badge-off">OpenAI ✗</span>
+        <span id="badge-claude"  class="badge badge-key badge-off">Claude ✗</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="classic">🔎 Classic Scan</button>
+    <button class="tab-btn"        data-tab="agents">🤖 Agent Mode</button>
+    <button class="tab-btn"        data-tab="settings">⚙️ Einstellungen</button>
+    <button class="tab-btn"        data-tab="history">📊 Historie</button>
+  </nav>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       Tab 1: Classic Scan
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-classic" class="tab-content active">
+    <div class="card">
+      <div class="input-row">
+        <div class="input-group">
+          <label>Ziel-IP / Hostname</label>
+          <input id="c-target" type="text" placeholder="192.168.178.1" spellcheck="false">
+        </div>
+        <div class="input-group wide">
+          <label>Nmap-Parameter</label>
+          <input id="c-args" type="text" placeholder="-sS -T4 -v -sV" spellcheck="false">
+        </div>
+        <div class="input-group">
+          <label>GPT-Modell</label>
+          <select id="c-model">
+            <option>gpt-4o-mini</option>
+            <option>gpt-4.1-mini</option>
+            <option>gpt-4o</option>
+            <option>gpt-4.1</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary"  id="btn-scan">▶ Scan starten</button>
+        <button class="btn btn-secondary" id="btn-gpt">🤖 GPT-Analyse</button>
+        <button class="btn btn-secondary" id="btn-sysinfo">📊 System-Info</button>
+        <button class="btn btn-secondary" id="btn-save-classic">💾 Report speichern</button>
+        <button class="btn btn-ghost"    id="btn-clear-classic">✕ Log leeren</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="log-container">
+      <div class="log-header">
+        <span>Output</span>
+        <span class="log-status" id="classic-status">Bereit</span>
+      </div>
+      <div class="log" id="log-classic"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       Tab 2: Agent Mode
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-agents" class="tab-content">
+    <div class="card">
+      <div class="input-row">
+        <div class="input-group wide">
+          <label>Ziel-IP / Hostname</label>
+          <input id="a-target" type="text" placeholder="192.168.178.1" spellcheck="false">
+        </div>
+        <div class="input-group">
+          <label>Claude-Modell</label>
+          <select id="a-model">
+            <option>claude-sonnet-4-6</option>
+            <option>claude-opus-4-6</option>
+            <option>claude-haiku-4-5-20251001</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="agent-toggles">
+        <span class="toggles-label">Agents:</span>
+        <label class="toggle-chip active" id="chip-recon">
+          <input type="checkbox" id="chk-recon" checked>
+          <span class="chip-dot recon"></span> ReconAgent
+        </label>
+        <label class="toggle-chip active" id="chip-vuln">
+          <input type="checkbox" id="chk-vuln" checked>
+          <span class="chip-dot vuln"></span> VulnAgent
+        </label>
+        <label class="toggle-chip active" id="chip-remed">
+          <input type="checkbox" id="chk-remed" checked>
+          <span class="chip-dot remed"></span> RemediationAgent
+        </label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-accent"   id="btn-run-agents">▶ Vollanalyse starten</button>
+        <button class="btn btn-secondary" id="btn-save-agents">💾 Report speichern</button>
+        <button class="btn btn-ghost"    id="btn-clear-agents">✕ Log leeren</button>
+      </div>
+    </div>
+
+    <!-- Fortschritts-Leiste -->
+    <div class="progress-bar-container" id="progress-container" style="display:none">
+      <div class="progress-steps">
+        <div class="step" id="step-recon">
+          <div class="step-dot"></div>
+          <div class="step-label">Recon</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-vuln">
+          <div class="step-dot"></div>
+          <div class="step-label">Vuln-Analyse</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-remed">
+          <div class="step-dot"></div>
+          <div class="step-label">Remediation</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-done">
+          <div class="step-dot"></div>
+          <div class="step-label">Fertig</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Log -->
+    <div class="log-container">
+      <div class="log-header">
+        <span>Agent Live-Log</span>
+        <span class="log-status" id="agents-status">Bereit</span>
+      </div>
+      <div class="log" id="log-agents"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       Tab 3: Einstellungen
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-settings" class="tab-content">
+    <div class="card settings-card">
+      <h2>API-Keys</h2>
+      <div class="settings-group">
+        <label>OpenAI API-Key</label>
+        <div class="key-row">
+          <input id="s-openai-key" type="password" placeholder="sk-...">
+          <button class="btn btn-secondary" onclick="saveKey('openai')">Speichern</button>
+        </div>
+      </div>
+      <div class="settings-group">
+        <label>Anthropic API-Key (für Claude Agents)</label>
+        <div class="key-row">
+          <input id="s-anthropic-key" type="password" placeholder="sk-ant-...">
+          <button class="btn btn-secondary" onclick="saveKey('anthropic')">Speichern</button>
+        </div>
+      </div>
+
+      <h2>Allgemein</h2>
+      <div class="settings-group">
+        <label>Sprache</label>
+        <select id="s-lang">
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+      </div>
+      <div class="settings-group">
+        <label>Standard-Ziel</label>
+        <input id="s-target" type="text" placeholder="192.168.178.1">
+      </div>
+      <div class="settings-group">
+        <label>Standard Nmap-Parameter</label>
+        <input id="s-nmap-args" type="text" placeholder="-sS -T4 -v -sV">
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()">Einstellungen speichern</button>
+    </div>
+
+    <div class="card settings-card">
+      <h2>System-Info</h2>
+      <div id="sysinfo-output" class="sysinfo-grid">Laden...</div>
+      <button class="btn btn-secondary" onclick="loadSysinfo()">Aktualisieren</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       Tab 4: Historie
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-history" class="tab-content">
+
+    <!-- Target-Auswahl -->
+    <div class="card">
+      <div class="input-row">
+        <div class="input-group wide">
+          <label>Ziel auswählen</label>
+          <select id="h-target-select">
+            <option value="">— Bitte Target wählen —</option>
+          </select>
+        </div>
+        <div class="input-group" style="justify-content: flex-end; padding-top: 18px;">
+          <button class="btn btn-secondary" id="btn-refresh-targets">↻ Targets laden</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline + Diff nebeneinander -->
+    <div class="history-layout">
+
+      <!-- Timeline -->
+      <div class="card history-panel">
+        <div class="history-panel-header">
+          <span class="history-panel-title">Scan-Verlauf</span>
+          <span class="log-status" id="history-status">Kein Target gewählt</span>
+        </div>
+        <div id="history-timeline" class="timeline">
+          <div class="timeline-empty">Kein Target gewählt oder keine History vorhanden.</div>
+        </div>
+      </div>
+
+      <!-- Diff-Vergleich -->
+      <div class="card history-panel">
+        <div class="history-panel-header">
+          <span class="history-panel-title">Vergleich (letzte 2 Scans)</span>
+          <button class="btn btn-ghost" id="btn-load-diff" style="padding: 4px 12px; font-size: 12px;">Vergleich laden</button>
+        </div>
+
+        <div id="diff-container">
+          <div class="timeline-empty">Wähle ein Target und klicke "Vergleich laden".</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Toast-Benachrichtigung ──────────────────────────────────────────── -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Secrets — niemals committen!
+config.json
+*.env
+.env
+.anthropic_key
+.openai_key
+openai_key.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Outputs
+output/
+logs/
+*.log
+report.txt
+
+# OS
+.DS_Store
+Thumbs.db

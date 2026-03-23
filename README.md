@@ -35,16 +35,24 @@ GhostVenumAI is a **defensive network security platform** that combines Nmap sca
 <td align="center"><b>Agent Mode — Live</b></td>
 </tr>
 <tr>
-<td><img src="screenshots/classic-scan.png" width="400"/></td>
+<td><img src="screenshots/classic-scan-enterprise.png" width="400"/></td>
 <td><img src="screenshots/agent-mode-start.png" width="400"/></td>
 </tr>
 <tr>
-<td align="center"><b>Agent Mode — Complete</b></td>
-<td align="center"><b>History — Before/After Diff</b></td>
+<td align="center"><b>Agent Mode — Complete + Memory Diff</b></td>
+<td align="center"><b>History — Before/After Comparison</b></td>
 </tr>
 <tr>
 <td><img src="screenshots/agent-mode-done.png" width="400"/></td>
 <td><img src="screenshots/history-diff.png" width="400"/></td>
+</tr>
+<tr>
+<td align="center"><b>BSI IT-Grundschutz Compliance</b></td>
+<td align="center"><b>Enterprise — Users, RBAC & E-Mail Alerts</b></td>
+</tr>
+<tr>
+<td><img src="screenshots/compliance-bsi.png" width="400"/></td>
+<td><img src="screenshots/enterprise-users-rbac.png" width="400"/></td>
 </tr>
 </table>
 

@@ -4,6 +4,43 @@
   "claude_model": "claude-sonnet-4-6",
   "target": "192.168.178.1",
   "nmap_args": "-sS -T4 -v -sV",
-  "openai_key": "sk-proj-HIER_DEINEN_OPENAI_KEY_EINTRAGEN",
-  "anthropic_key": "sk-ant-HIER_DEINEN_ANTHROPIC_KEY_EINTRAGEN"
+  "monitor_nmap_args": "-sV -T4 --open",
+
+  "vault_enabled": true,
+
+  "enterprise": {
+    "organization":    "Ihre Organisation GmbH",
+    "contact_email":   "security@example.com",
+    "dpo_email":       "datenschutz@example.com",
+    "ciso_email":      "ciso@example.com",
+
+    "retention_days": {
+      "scan_history":     90,
+      "pdf_reports":     365,
+      "auth_logs":        30,
+      "gpt_analyses":     30,
+      "audit_log":       365,
+      "incident_reports": 730
+    },
+
+    "notifications": {
+      "webhook_url": "",
+      "smtp": {
+        "host":     "smtp.example.com",
+        "port":     587,
+        "user":     "alerts@example.com",
+        "password": "",
+        "from":     "ghostvenum@example.com",
+        "to":       "security@example.com"
+      }
+    },
+
+    "compliance": {
+      "iso27001": true,
+      "dsgvo":    true,
+      "bsi":      true
+    }
+  },
+
+  "_HINWEIS": "API-Keys NICHT hier eintragen! Stattdessen: python modules/key_manager.py migrate"
 }

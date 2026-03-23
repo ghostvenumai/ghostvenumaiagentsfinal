@@ -11,6 +11,8 @@ from modules.scanner     import run_nmap_scan
 from modules.gpt_analysis import analyze_scan_with_gpt
 from modules.report      import create_report
 from modules.system_info import collect_system_info
+from agent_tab import AgentTab
+from monitor_tab import MonitorTab
 
 # ── Farb-Tags ──────────────────────────────────────────────────────────────────
 TAG_COLORS = {
@@ -120,12 +122,19 @@ class GhostVenumApp(tk.Tk):
         nb.pack(fill="both", expand=True, padx=10, pady=(6, 10))
 
         tab_classic = ttk.Frame(nb)
-        tab_agents  = ttk.Frame(nb)
         nb.add(tab_classic, text=i18n.get("tab_classic"))
-        nb.add(tab_agents,  text=i18n.get("tab_agents"))
-
         self._build_classic_tab(tab_classic)
-        self._build_agent_tab(tab_agents)
+
+        # Agent Mode Tab — eigenständiges Modul
+        THEME = {"BG": BG, "BG2": BG2, "BG3": BG3, "FG": FG, "ACC": ACC}
+        tab_agents = AgentTab(nb, cfg=self._cfg,
+                              save_cfg_fn=self._save_config, theme=THEME)
+        nb.add(tab_agents, text=i18n.get("tab_agents"))
+
+        # Monitoring Tab — eigenständiges Modul
+        tab_monitor = MonitorTab(nb, cfg=self._cfg,
+                                 save_cfg_fn=self._save_config, theme=THEME)
+        nb.add(tab_monitor, text="📡 Monitoring")
 
     # ══════════════════════════════════════════════════════════════════════════
     # Tab 1: Classic Scan

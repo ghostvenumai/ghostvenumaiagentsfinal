@@ -581,6 +581,125 @@ if (btnRefreshTargets) {
   });
 }
 
+// ── Monitoring ──────────────────────────────────────────────────────────────────
+
+let monitorEvtSource = null;
+
+function updateMonitorStatus(status) {
+  if (!status) return;
+  const dot  = document.getElementById("monitor-dot");
+  const text = document.getElementById("monitor-status-text");
+  const bar  = document.getElementById("monitor-status-bar");
+
+  if (bar) bar.style.display = "flex";
+
+  if (status.running) {
+    if (dot)  { dot.className = "monitor-dot running"; }
+    if (text) text.textContent = `Läuft — Ziel: ${status.target}`;
+    setStatus("monitor-log-status", "Läuft...", "running");
+  } else {
+    if (dot)  { dot.className = "monitor-dot stopped"; }
+    if (text) text.textContent = "Gestoppt";
+    setStatus("monitor-log-status", "Gestoppt", "");
+  }
+
+  const sc = document.getElementById("m-scan-count");
+  const cc = document.getElementById("m-change-count");
+  const ls = document.getElementById("m-last-scan");
+  const ns = document.getElementById("m-next-scan");
+  if (sc) sc.textContent = status.scan_count   || 0;
+  if (cc) cc.textContent = status.change_count || 0;
+  if (ls) ls.textContent = status.last_scan    || "—";
+  if (ns) ns.textContent = status.next_scan    || "—";
+}
+
+document.getElementById("btn-monitor-start").addEventListener("click", () => {
+  const target   = document.getElementById("m-target").value.trim();
+  const interval = document.getElementById("m-interval").value;
+  const nmapArgs = document.getElementById("m-nmap-args").value.trim();
+
+  if (!target) { toast("Bitte Ziel-IP eingeben.", "err"); return; }
+
+  document.getElementById("btn-monitor-start").disabled = true;
+  document.getElementById("btn-monitor-stop").disabled  = false;
+  clearLog("log-monitor");
+  appendLog("log-monitor", `[Monitor] Starte Monitoring — Ziel: ${target} | Intervall: ${interval} min`, "log-info");
+
+  if (monitorEvtSource) { monitorEvtSource.close(); }
+
+  fetch("/api/monitor/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ target, interval_min: parseInt(interval), nmap_args: nmapArgs })
+  }).then(r => {
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+
+    function read() {
+      reader.read().then(({ done, value }) => {
+        if (done) return;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n\n");
+        buf = lines.pop();
+        lines.forEach(line => {
+          const dataLine = line.replace(/^data: /, "").trim();
+          if (!dataLine) return;
+          try {
+            const msg = JSON.parse(dataLine);
+            if (msg.status) updateMonitorStatus(msg.status);
+
+            if (msg.type === "log") {
+              const content = msg.content || "";
+              const cls = content.includes("ÄNDERUNG") || content.includes("⚠️")
+                ? "log-change"
+                : content.includes("✅") ? "log-ok"
+                : content.includes("FEHLER") || content.includes("ERR") ? "log-err"
+                : "log-plain";
+              appendLog("log-monitor", content, cls);
+            } else if (msg.type === "change") {
+              const d = msg.diff;
+              appendLog("log-monitor", `⚠️  ÄNDERUNG: ${d.summary}`, "log-change");
+              (d.new_ports    || []).forEach(p => appendLog("log-monitor", `  🔴 Neuer Port: ${p}`, "log-err"));
+              (d.closed_ports || []).forEach(p => appendLog("log-monitor", `  🟡 Port geschlossen: ${p}`, "log-warn"));
+              (d.versions     || []).forEach(v => appendLog("log-monitor",
+                `  🔵 Version: ${v.port} ${v.service} ${v.old_version} → ${v.new_version}`, "log-info"));
+              toast("⚠️ Netzwerkänderung erkannt!", "err");
+            } else if (msg.type === "stopped") {
+              document.getElementById("btn-monitor-start").disabled = false;
+              document.getElementById("btn-monitor-stop").disabled  = true;
+              appendLog("log-monitor", "[Monitor] Gestoppt.", "log-warn");
+              setStatus("monitor-log-status", "Gestoppt", "");
+            }
+          } catch (e) { /* ignorieren */ }
+        });
+        read();
+      });
+    }
+    read();
+  }).catch(e => {
+    toast("Monitoring-Fehler: " + e.message, "err");
+    document.getElementById("btn-monitor-start").disabled = false;
+    document.getElementById("btn-monitor-stop").disabled  = true;
+  });
+});
+
+document.getElementById("btn-monitor-stop").addEventListener("click", () => {
+  fetch("/api/monitor/stop", { method: "POST" })
+    .then(() => {
+      document.getElementById("btn-monitor-start").disabled = false;
+      document.getElementById("btn-monitor-stop").disabled  = true;
+      appendLog("log-monitor", "[Monitor] Stopp-Signal gesendet.", "log-warn");
+      setStatus("monitor-log-status", "Gestoppt", "");
+      const dot = document.getElementById("monitor-dot");
+      if (dot) dot.className = "monitor-dot stopped";
+    });
+});
+
+document.getElementById("btn-monitor-clear").addEventListener("click", () => {
+  clearLog("log-monitor");
+});
+
 // Diff-Button
 const btnLoadDiff = document.getElementById("btn-load-diff");
 if (btnLoadDiff) {

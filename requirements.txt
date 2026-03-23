@@ -9,3 +9,16 @@ anthropic>=0.40.0
 # ── Web-GUI ────────────────────────────────────────────────────────────────────
 flask>=3.0.0
 flask-cors>=4.0.0
+
+# ── PDF-Report + Verschlüsselung ───────────────────────────────────────────────
+reportlab>=4.0.0
+pycryptodome>=3.20.0
+
+# ── Enterprise: MFA / TOTP (ISO 27001 A.9.4, BSI M 4.133) ─────────────────────
+pyotp>=2.9.0
+
+# ── Enterprise: Erweiterte Kryptographie ──────────────────────────────────────
+cryptography>=42.0.0
+
+# ── Post-Quanten-sicheres Passwort-Hashing (OWASP 2024, BSI TR-02102) ─────────
+argon2-cffi>=23.1.0

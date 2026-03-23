@@ -18,6 +18,7 @@ if _ROOT not in sys.path:
 
 from . import recon_agent, vuln_agent, remediation_agent
 from modules import memory
+from modules.privacy_filter import PrivacyFilter
 
 SYSTEM_PROMPT = """Du bist OrchestratorAgent — Koordinator für GhostVenumAI.
 
@@ -102,6 +103,9 @@ def run_full_analysis(target: str, log_callback=None) -> str:
     except Exception as e:
         _log("OrchestratorAgent", f"Memory-Laden fehlgeschlagen (nicht kritisch): {e}")
 
+    # ── PrivacyFilter initialisieren ──────────────────────────────────────────
+    pf = PrivacyFilter()
+
     # ── Schritt 1: ReconAgent ─────────────────────────────────────────────────
     _log("OrchestratorAgent", f"Starte Analyse für: {target}")
     _log("ReconAgent", "Ping-Check und Nmap-Scan werden gestartet...")
@@ -114,13 +118,18 @@ def run_full_analysis(target: str, log_callback=None) -> str:
         _log("ReconAgent", f"FEHLER: {e}")
         _log("OrchestratorAgent", "ReconAgent fehlgeschlagen — fahre ohne Scan-Daten fort.")
 
+    # ── PrivacyFilter anwenden (vor API-Weitergabe) ───────────────────────────
+    scan_output_anon = pf.anonymize(scan_output) if scan_output else ""
+    if scan_output_anon:
+        _log("OrchestratorAgent", f"🔒 {pf.summary()}")
+
     # ── Schritt 2: VulnAgent ──────────────────────────────────────────────────
     _log("VulnAgent", "Starte CVE-Analyse...")
 
     cve_output = ""
-    if scan_output:
+    if scan_output_anon:
         try:
-            cve_output = vuln_agent.run(scan_output, client, model)
+            cve_output = vuln_agent.run(scan_output_anon, client, model)
             _log("VulnAgent", f"CVE-Analyse abgeschlossen. ({len(cve_output)} Zeichen)")
         except Exception as e:
             _log("VulnAgent", f"FEHLER: {e}")
@@ -132,7 +141,7 @@ def run_full_analysis(target: str, log_callback=None) -> str:
     _log("RemediationAgent", "Generiere Fix-Empfehlungen...")
 
     remed_output = ""
-    input_for_remed = cve_output or scan_output or f"Ziel: {target} — keine Scan-Daten verfügbar."
+    input_for_remed = cve_output or scan_output_anon or f"Ziel: {target} — keine Scan-Daten verfügbar."
     try:
         remed_output = remediation_agent.run(input_for_remed, client, model)
         _log("RemediationAgent", "Fix-Empfehlungen generiert und gespeichert.")
@@ -167,7 +176,7 @@ def run_full_analysis(target: str, log_callback=None) -> str:
 
     combined = (
         f"Ziel: {target}\n\n"
-        f"=== RECON-OUTPUT ===\n{scan_output}\n\n"
+        f"=== RECON-OUTPUT ===\n{scan_output_anon}\n\n"
         f"=== CVE-ANALYSE ===\n{cve_output}\n\n"
         f"=== REMEDIATION ===\n{remed_output}"
         f"{diff_section}"
@@ -190,6 +199,9 @@ def run_full_analysis(target: str, log_callback=None) -> str:
     except Exception as e:
         summary = f"Management-Summary Fehler: {e}"
 
+    # ── PrivacyFilter: echte Werte in Summary zurückschreiben ─────────────────
+    summary = pf.restore(summary)
+
     # ── Schritt 5: Scan in Memory speichern ──────────────────────────────────
     try:
         new_scan_id = memory.save_scan(
@@ -209,8 +221,60 @@ def run_full_analysis(target: str, log_callback=None) -> str:
     except Exception as e:
         _log("OrchestratorAgent", f"Memory-Speichern fehlgeschlagen (nicht kritisch): {e}")
 
+    # ── Schritt 6: PDF-Report erstellen + verschlüsseln ──────────────────────
+    try:
+        from modules.report_generator import generate_report, check_reportlab
+        from modules.report_crypto    import encrypt_report, check_pycryptodome
+
+        if check_reportlab():
+            _log("OrchestratorAgent", "Erstelle PDF-Report...")
+            pdf_path = generate_report(
+                target      = target,
+                scan_output = scan_output,
+                cve_output  = cve_output,
+                remediation = remed_output,
+                summary     = summary,
+            )
+            _log("OrchestratorAgent", f"PDF gespeichert: {pdf_path}")
+
+            if check_pycryptodome():
+                # Passwort aus config.json lesen (Fallback: Standard)
+                report_password = _key_from_config_key("report_password") \
+                                  or "GhostVenumAI2025"
+                enc_path, veri_path = encrypt_report(
+                    pdf_path,
+                    password = report_password,
+                    metadata = {"target": target, "scan_id": new_scan_id
+                                if "new_scan_id" in dir() else ""},
+                )
+                _log("OrchestratorAgent",
+                     f"🔒 Report verschlüsselt (AES-256-GCM): {enc_path}")
+                _log("OrchestratorAgent",
+                     f"📋 Verifikationsdatei: {veri_path}")
+            else:
+                _log("OrchestratorAgent",
+                     "⚠️  pycryptodome fehlt — Report nicht verschlüsselt. "
+                     "pip install pycryptodome")
+        else:
+            _log("OrchestratorAgent",
+                 "⚠️  reportlab fehlt — kein PDF-Report. "
+                 "pip install reportlab")
+    except Exception as e:
+        _log("OrchestratorAgent", f"PDF-Report fehlgeschlagen (nicht kritisch): {e}")
+
     _log("OrchestratorAgent", "Analyse vollständig abgeschlossen.")
     return summary
+
+
+def _key_from_config_key(key: str):
+    """Liest einen einzelnen Wert aus config.json."""
+    try:
+        import json
+        cfg_path = os.path.join(_ROOT, "config.json")
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            return json.load(f).get(key)
+    except Exception:
+        return None
 
 
 def stream_analysis(target: str) -> Iterator[dict]:

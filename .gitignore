@@ -1,5 +1,8 @@
 # Secrets — niemals committen!
 config.json
+config.users.json
+config.vault
+config.vault.meta
 *.env
 .env
 .anthropic_key
@@ -23,6 +26,8 @@ output/
 logs/
 *.log
 report.txt
+reports/
+backup/
 
 # OS
 .DS_Store

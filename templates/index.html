@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>👻 GhostVenumAI v2.0 — Agent Edition</title>
+  <title>👻 GhostVenumAI v2.0 — Enterprise Edition</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -14,22 +14,32 @@
       <div class="logo">
         <span class="logo-icon">👻</span>
         <span class="logo-text">GhostVenumAI</span>
-        <span class="logo-version">v2.0 Agent Edition</span>
+        <span class="logo-version">v2.0 Enterprise</span>
       </div>
       <div class="header-badges">
-        <span class="badge badge-defensive">Defensiv</span>
+        <span class="badge badge-defensive" data-i18n="badge_defensive">Defensiv</span>
+        <span class="badge badge-enterprise">ISO 27001</span>
+        <span class="badge badge-enterprise">DSGVO</span>
+        <span class="badge badge-enterprise">BSI</span>
         <span id="badge-openai"  class="badge badge-key badge-off">OpenAI ✗</span>
         <span id="badge-claude"  class="badge badge-key badge-off">Claude ✗</span>
+        <button id="lang-toggle" onclick="toggleLang()" style="
+          background:#2d333b;border:1px solid #444c56;color:#e0e0e0;
+          border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;
+          cursor:pointer;letter-spacing:.5px;transition:all .2s">🌐 DE</button>
       </div>
     </div>
   </header>
 
   <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
   <nav class="tabs">
-    <button class="tab-btn active" data-tab="classic">🔎 Classic Scan</button>
-    <button class="tab-btn"        data-tab="agents">🤖 Agent Mode</button>
-    <button class="tab-btn"        data-tab="settings">⚙️ Einstellungen</button>
-    <button class="tab-btn"        data-tab="history">📊 Historie</button>
+    <button class="tab-btn active" data-tab="classic"    data-i18n="tab_classic">🔎 Classic Scan</button>
+    <button class="tab-btn"        data-tab="agents"     data-i18n="tab_agents">🤖 Agent Mode</button>
+    <button class="tab-btn"        data-tab="settings"   data-i18n="tab_settings">⚙️ Einstellungen</button>
+    <button class="tab-btn"        data-tab="history"    data-i18n="tab_history">📊 Historie</button>
+    <button class="tab-btn"        data-tab="monitor"    data-i18n="tab_monitor">📡 Monitoring</button>
+    <button class="tab-btn"        data-tab="compliance" data-i18n="tab_compliance">🛡️ Compliance</button>
+    <button class="tab-btn"        data-tab="admin"      data-i18n="tab_admin">👤 Benutzer</button>
   </nav>
 
   <!-- ════════════════════════════════════════════════════════════════════════
@@ -39,15 +49,15 @@
     <div class="card">
       <div class="input-row">
         <div class="input-group">
-          <label>Ziel-IP / Hostname</label>
+          <label data-i18n="lbl_target">Ziel-IP / Hostname</label>
           <input id="c-target" type="text" placeholder="192.168.178.1" spellcheck="false">
         </div>
         <div class="input-group wide">
-          <label>Nmap-Parameter</label>
+          <label data-i18n="lbl_nmap_args">Nmap-Parameter</label>
           <input id="c-args" type="text" placeholder="-sS -T4 -v -sV" spellcheck="false">
         </div>
         <div class="input-group">
-          <label>GPT-Modell</label>
+          <label data-i18n="lbl_gpt_model">GPT-Modell</label>
           <select id="c-model">
             <option>gpt-4o-mini</option>
             <option>gpt-4.1-mini</option>
@@ -58,11 +68,11 @@
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-primary"  id="btn-scan">▶ Scan starten</button>
-        <button class="btn btn-secondary" id="btn-gpt">🤖 GPT-Analyse</button>
-        <button class="btn btn-secondary" id="btn-sysinfo">📊 System-Info</button>
-        <button class="btn btn-secondary" id="btn-save-classic">💾 Report speichern</button>
-        <button class="btn btn-ghost"    id="btn-clear-classic">✕ Log leeren</button>
+        <button class="btn btn-primary"  id="btn-scan"          data-i18n="btn_scan">▶ Scan starten</button>
+        <button class="btn btn-secondary" id="btn-gpt"           data-i18n="btn_gpt">🤖 GPT-Analyse</button>
+        <button class="btn btn-secondary" id="btn-sysinfo"       data-i18n="btn_sysinfo">📊 System-Info</button>
+        <button class="btn btn-secondary" id="btn-save-classic"  data-i18n="btn_save_report">💾 Report speichern</button>
+        <button class="btn btn-ghost"    id="btn-clear-classic"  data-i18n="btn_clear_log">✕ Log leeren</button>
       </div>
     </div>
 
@@ -70,7 +80,7 @@
     <div class="log-container">
       <div class="log-header">
         <span>Output</span>
-        <span class="log-status" id="classic-status">Bereit</span>
+        <span class="log-status" id="classic-status" data-i18n="status_ready">Bereit</span>
       </div>
       <div class="log" id="log-classic"></div>
     </div>
@@ -83,11 +93,11 @@
     <div class="card">
       <div class="input-row">
         <div class="input-group wide">
-          <label>Ziel-IP / Hostname</label>
+          <label data-i18n="lbl_target">Ziel-IP / Hostname</label>
           <input id="a-target" type="text" placeholder="192.168.178.1" spellcheck="false">
         </div>
         <div class="input-group">
-          <label>Claude-Modell</label>
+          <label data-i18n="lbl_claude_model">Claude-Modell</label>
           <select id="a-model">
             <option>claude-sonnet-4-6</option>
             <option>claude-opus-4-6</option>
@@ -113,9 +123,9 @@
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-accent"   id="btn-run-agents">▶ Vollanalyse starten</button>
-        <button class="btn btn-secondary" id="btn-save-agents">💾 Report speichern</button>
-        <button class="btn btn-ghost"    id="btn-clear-agents">✕ Log leeren</button>
+        <button class="btn btn-accent"   id="btn-run-agents"  data-i18n="btn_full_analysis">▶ Vollanalyse starten</button>
+        <button class="btn btn-secondary" id="btn-save-agents" data-i18n="btn_save_report">💾 Report speichern</button>
+        <button class="btn btn-ghost"    id="btn-clear-agents" data-i18n="btn_clear_log">✕ Log leeren</button>
       </div>
     </div>
 
@@ -124,22 +134,22 @@
       <div class="progress-steps">
         <div class="step" id="step-recon">
           <div class="step-dot"></div>
-          <div class="step-label">Recon</div>
+          <div class="step-label" data-i18n="step_recon">Recon</div>
         </div>
         <div class="step-line"></div>
         <div class="step" id="step-vuln">
           <div class="step-dot"></div>
-          <div class="step-label">Vuln-Analyse</div>
+          <div class="step-label" data-i18n="step_vuln">Vuln-Analyse</div>
         </div>
         <div class="step-line"></div>
         <div class="step" id="step-remed">
           <div class="step-dot"></div>
-          <div class="step-label">Remediation</div>
+          <div class="step-label" data-i18n="step_remed">Remediation</div>
         </div>
         <div class="step-line"></div>
         <div class="step" id="step-done">
           <div class="step-dot"></div>
-          <div class="step-label">Fertig</div>
+          <div class="step-label" data-i18n="step_done">Fertig</div>
         </div>
       </div>
     </div>
@@ -147,8 +157,8 @@
     <!-- Agent Log -->
     <div class="log-container">
       <div class="log-header">
-        <span>Agent Live-Log</span>
-        <span class="log-status" id="agents-status">Bereit</span>
+        <span data-i18n="h_agent_log">Agent Live-Log</span>
+        <span class="log-status" id="agents-status" data-i18n="status_ready">Bereit</span>
       </div>
       <div class="log" id="log-agents"></div>
     </div>
@@ -159,46 +169,45 @@
   ════════════════════════════════════════════════════════════════════════════ -->
   <div id="tab-settings" class="tab-content">
     <div class="card settings-card">
-      <h2>API-Keys</h2>
+      <h2 data-i18n="h_api_keys">API-Keys</h2>
       <div class="settings-group">
         <label>OpenAI API-Key</label>
         <div class="key-row">
           <input id="s-openai-key" type="password" placeholder="sk-...">
-          <button class="btn btn-secondary" onclick="saveKey('openai')">Speichern</button>
+          <button class="btn btn-secondary" onclick="saveKey('openai')" data-i18n="btn_save">Speichern</button>
         </div>
       </div>
       <div class="settings-group">
-        <label>Anthropic API-Key (für Claude Agents)</label>
+        <label data-i18n="lbl_anthropic_key">Anthropic API-Key (für Claude Agents)</label>
         <div class="key-row">
           <input id="s-anthropic-key" type="password" placeholder="sk-ant-...">
-          <button class="btn btn-secondary" onclick="saveKey('anthropic')">Speichern</button>
+          <button class="btn btn-secondary" onclick="saveKey('anthropic')" data-i18n="btn_save">Speichern</button>
         </div>
       </div>
 
-      <h2>Allgemein</h2>
+      <h2 data-i18n="h_general">Allgemein</h2>
       <div class="settings-group">
-        <label>Sprache</label>
-        <select id="s-lang">
-          <option value="de">Deutsch</option>
-          <option value="en">English</option>
-          <option value="es">Español</option>
+        <label data-i18n="lbl_language">Sprache</label>
+        <select id="s-lang" onchange="setLang(this.value)">
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="en">🇬🇧 English</option>
         </select>
       </div>
       <div class="settings-group">
-        <label>Standard-Ziel</label>
+        <label data-i18n="lbl_default_target">Standard-Ziel</label>
         <input id="s-target" type="text" placeholder="192.168.178.1">
       </div>
       <div class="settings-group">
-        <label>Standard Nmap-Parameter</label>
+        <label data-i18n="lbl_default_nmap">Standard Nmap-Parameter</label>
         <input id="s-nmap-args" type="text" placeholder="-sS -T4 -v -sV">
       </div>
-      <button class="btn btn-primary" onclick="saveSettings()">Einstellungen speichern</button>
+      <button class="btn btn-primary" onclick="saveSettings()" data-i18n="btn_save_settings">Einstellungen speichern</button>
     </div>
 
     <div class="card settings-card">
-      <h2>System-Info</h2>
-      <div id="sysinfo-output" class="sysinfo-grid">Laden...</div>
-      <button class="btn btn-secondary" onclick="loadSysinfo()">Aktualisieren</button>
+      <h2 data-i18n="h_sysinfo">System-Info</h2>
+      <div id="sysinfo-output" class="sysinfo-grid" data-i18n="lbl_loading">Laden...</div>
+      <button class="btn btn-secondary" onclick="loadSysinfo()" data-i18n="btn_refresh">Aktualisieren</button>
     </div>
   </div>
 
@@ -211,13 +220,13 @@
     <div class="card">
       <div class="input-row">
         <div class="input-group wide">
-          <label>Ziel auswählen</label>
+          <label data-i18n="lbl_select_target">Ziel auswählen</label>
           <select id="h-target-select">
-            <option value="">— Bitte Target wählen —</option>
+            <option value="" data-i18n="opt_select_target">— Bitte Target wählen —</option>
           </select>
         </div>
         <div class="input-group" style="justify-content: flex-end; padding-top: 18px;">
-          <button class="btn btn-secondary" id="btn-refresh-targets">↻ Targets laden</button>
+          <button class="btn btn-secondary" id="btn-refresh-targets" data-i18n="btn_load_targets">↻ Targets laden</button>
         </div>
       </div>
     </div>
@@ -228,32 +237,1214 @@
       <!-- Timeline -->
       <div class="card history-panel">
         <div class="history-panel-header">
-          <span class="history-panel-title">Scan-Verlauf</span>
-          <span class="log-status" id="history-status">Kein Target gewählt</span>
+          <span class="history-panel-title" data-i18n="h_scan_history">Scan-Verlauf</span>
+          <span class="log-status" id="history-status" data-i18n="status_no_target">Kein Target gewählt</span>
         </div>
         <div id="history-timeline" class="timeline">
-          <div class="timeline-empty">Kein Target gewählt oder keine History vorhanden.</div>
+          <div class="timeline-empty" data-i18n="txt_no_history">Kein Target gewählt oder keine History vorhanden.</div>
         </div>
       </div>
 
       <!-- Diff-Vergleich -->
       <div class="card history-panel">
         <div class="history-panel-header">
-          <span class="history-panel-title">Vergleich (letzte 2 Scans)</span>
-          <button class="btn btn-ghost" id="btn-load-diff" style="padding: 4px 12px; font-size: 12px;">Vergleich laden</button>
+          <span class="history-panel-title" data-i18n="h_diff">Vergleich (letzte 2 Scans)</span>
+          <button class="btn btn-ghost" id="btn-load-diff" style="padding: 4px 12px; font-size: 12px;" data-i18n="btn_load_diff">Vergleich laden</button>
         </div>
 
         <div id="diff-container">
-          <div class="timeline-empty">Wähle ein Target und klicke "Vergleich laden".</div>
+          <div class="timeline-empty" data-i18n="txt_no_diff">Wähle ein Target und klicke "Vergleich laden".</div>
         </div>
       </div>
 
     </div>
   </div>
 
+  <!-- ════════════════════════════════════════════════════════════════════════
+       Tab 5: Monitoring
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-monitor" class="tab-content">
+    <div class="card">
+      <div class="input-row">
+        <div class="input-group wide">
+          <label data-i18n="lbl_target">Ziel (IP / Range)</label>
+          <input id="m-target" type="text" placeholder="192.168.178.0/24" spellcheck="false">
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_interval">Intervall</label>
+          <select id="m-interval">
+            <option value="5"    data-i18n="opt_5min">5 Minuten (Test)</option>
+            <option value="30"   data-i18n="opt_30min">30 Minuten</option>
+            <option value="60"   selected data-i18n="opt_1h">1 Stunde</option>
+            <option value="360"  data-i18n="opt_6h">6 Stunden</option>
+            <option value="720"  data-i18n="opt_12h">12 Stunden</option>
+            <option value="1440" data-i18n="opt_24h">24 Stunden</option>
+          </select>
+        </div>
+        <div class="input-group wide">
+          <label data-i18n="lbl_nmap_args">Nmap-Args</label>
+          <input id="m-nmap-args" type="text" value="-sV -T4 --open" spellcheck="false">
+        </div>
+      </div>
+
+      <!-- Status-Zeile -->
+      <div class="monitor-status-bar" id="monitor-status-bar" style="display:none">
+        <span class="monitor-dot" id="monitor-dot">●</span>
+        <span id="monitor-status-text" data-i18n="status_ready">Bereit</span>
+        <span class="monitor-stat"><span data-i18n="lbl_scans">Scans</span>: <b id="m-scan-count">0</b></span>
+        <span class="monitor-stat"><span data-i18n="lbl_changes">Änderungen</span>: <b id="m-change-count" style="color:var(--orange)">0</b></span>
+        <span class="monitor-stat"><span data-i18n="lbl_last_scan">Letzter Scan</span>: <b id="m-last-scan">—</b></span>
+        <span class="monitor-stat"><span data-i18n="lbl_next_scan">Nächster Scan</span>: <b id="m-next-scan">—</b></span>
+      </div>
+
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-primary" id="btn-monitor-start" data-i18n="btn_monitor_start">▶  Monitoring starten</button>
+        <button class="btn btn-ghost"   id="btn-monitor-stop" disabled data-i18n="btn_stop">■  Stoppen</button>
+        <button class="btn btn-ghost"   id="btn-monitor-clear" data-i18n="btn_clear_log">✕ Log leeren</button>
+      </div>
+    </div>
+
+    <div class="log-container">
+      <div class="log-header">
+        <span data-i18n="h_monitor_log">Monitoring Live-Log</span>
+        <span class="log-status" id="monitor-log-status" data-i18n="status_stopped">Gestoppt</span>
+      </div>
+      <div class="log" id="log-monitor"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       Tab 6: Compliance (ISO 27001 · DSGVO · BSI)
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-compliance" class="tab-content">
+
+    <!-- Sub-Nav -->
+    <div class="compliance-subnav">
+      <button class="sub-btn active" data-sub="overview"   data-i18n="sub_overview">Übersicht</button>
+      <button class="sub-btn" data-sub="iso">ISO 27001</button>
+      <button class="sub-btn" data-sub="dsgvo">DSGVO</button>
+      <button class="sub-btn" data-sub="bsi">BSI</button>
+      <button class="sub-btn" data-sub="incidents"         data-i18n="sub_incidents">Vorfälle</button>
+      <button class="sub-btn" data-sub="audit">Audit-Log</button>
+      <span id="comp-last-update" style="margin-left:auto;font-size:11px;color:var(--fg2);align-self:center"></span>
+    </div>
+
+    <!-- ── Übersicht ─────────────────────────────────────────── -->
+    <div id="sub-overview" class="sub-content active">
+      <div class="comp-grid-3">
+
+        <!-- ISO Score -->
+        <div class="card comp-score-card">
+          <div class="comp-score-header">ISO 27001:2022</div>
+          <div class="comp-score-body">
+            <svg class="comp-ring-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="var(--bg4)" stroke-width="8"/>
+              <circle id="ring-iso" cx="40" cy="40" r="30" fill="none" stroke="var(--blue)"
+                      stroke-width="8" stroke-dasharray="0 188.5" stroke-linecap="round"
+                      transform="rotate(-90 40 40)" style="transition:stroke-dasharray .8s ease"/>
+            </svg>
+            <div class="comp-ring-center">
+              <span class="comp-ring-pct" id="iso-pct">–</span>
+              <span class="comp-ring-lbl" id="iso-lbl" data-i18n="lbl_loading">Laden…</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DSGVO Score -->
+        <div class="card comp-score-card">
+          <div class="comp-score-header">DSGVO / GDPR</div>
+          <div class="comp-score-body">
+            <svg class="comp-ring-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="var(--bg4)" stroke-width="8"/>
+              <circle id="ring-dsgvo" cx="40" cy="40" r="30" fill="none" stroke="var(--green)"
+                      stroke-width="8" stroke-dasharray="0 188.5" stroke-linecap="round"
+                      transform="rotate(-90 40 40)" style="transition:stroke-dasharray .8s ease"/>
+            </svg>
+            <div class="comp-ring-center">
+              <span class="comp-ring-pct" id="dsgvo-pct">–</span>
+              <span class="comp-ring-lbl" id="dsgvo-lbl" data-i18n="lbl_loading">Laden…</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BSI Score -->
+        <div class="card comp-score-card">
+          <div class="comp-score-header">BSI IT-Grundschutz</div>
+          <div class="comp-score-body">
+            <svg class="comp-ring-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="var(--bg4)" stroke-width="8"/>
+              <circle id="ring-bsi" cx="40" cy="40" r="30" fill="none" stroke="var(--orange)"
+                      stroke-width="8" stroke-dasharray="0 188.5" stroke-linecap="round"
+                      transform="rotate(-90 40 40)" style="transition:stroke-dasharray .8s ease"/>
+            </svg>
+            <div class="comp-ring-center">
+              <span class="comp-ring-pct" id="bsi-pct">–</span>
+              <span class="comp-ring-lbl" id="bsi-lbl" data-i18n="lbl_loading">Laden…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-grid-2">
+        <!-- Vorfälle -->
+        <div class="card">
+          <div class="comp-card-title" data-i18n="h_security_incidents">Sicherheitsvorfälle</div>
+          <div id="ov-incidents" class="comp-stats-grid">
+            <div class="spinner"></div>
+          </div>
+        </div>
+        <!-- Sicherheitsstatus -->
+        <div class="card">
+          <div class="comp-card-title" data-i18n="h_security_status">Sicherheitsstatus</div>
+          <div id="ov-security"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ISO 27001 ──────────────────────────────────────────── -->
+    <div id="sub-iso" class="sub-content">
+      <div class="card">
+        <div class="comp-panel-header">
+          <span class="comp-card-title" data-i18n="h_iso_controls">ISO 27001:2022 — Kontrollbereiche</span>
+          <button class="btn btn-ghost" style="font-size:12px;padding:4px 12px" onclick="loadISO()" data-i18n="btn_refresh">↻ Aktualisieren</button>
+        </div>
+        <div id="iso-body"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ── DSGVO ──────────────────────────────────────────────── -->
+    <div id="sub-dsgvo" class="sub-content">
+      <div class="comp-grid-2">
+        <div class="card">
+          <div class="comp-card-title" data-i18n="h_compliance_checks">Compliance-Checks</div>
+          <div id="dsgvo-checks-body"><div class="spinner"></div></div>
+        </div>
+        <div class="card">
+          <div class="comp-card-title" data-i18n="h_retention">Aufbewahrungsfristen</div>
+          <div id="dsgvo-retention-body"><div class="spinner"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="comp-card-title" data-i18n="h_dsgvo_actions">Aktionen (DSGVO-Rechte)</div>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn btn-secondary" onclick="dsgvoExport()"     data-i18n="btn_dsgvo_export">📦 Export (Art. 20)</button>
+          <button class="btn btn-secondary" onclick="dsgvoInitVVT()"    data-i18n="btn_dsgvo_vvt">📋 VVT erstellen (Art. 30)</button>
+          <button class="btn btn-secondary" onclick="dsgvoRetention()"  data-i18n="btn_dsgvo_retention">🗑️ Aufbewahrung anwenden</button>
+          <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="dsgvoDeleteAll()" data-i18n="btn_dsgvo_delete">⚠️ Alle Daten löschen (Art. 17)</button>
+        </div>
+        <div id="dsgvo-action-msg" style="margin-top:10px;font-size:12px;color:var(--fg2)"></div>
+      </div>
+    </div>
+
+    <!-- ── BSI ────────────────────────────────────────────────── -->
+    <div id="sub-bsi" class="sub-content">
+      <div class="card">
+        <div class="comp-panel-header">
+          <span class="comp-card-title" data-i18n="h_bsi_kompendium">BSI IT-Grundschutz Kompendium 2023</span>
+          <button class="btn btn-ghost" style="font-size:12px;padding:4px 12px" onclick="loadBSI()" data-i18n="btn_refresh">↻ Aktualisieren</button>
+        </div>
+        <div id="bsi-body"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ── Vorfälle ───────────────────────────────────────────── -->
+    <div id="sub-incidents" class="sub-content">
+      <div class="card">
+        <div class="comp-panel-header">
+          <span class="comp-card-title" data-i18n="h_security_incidents">Sicherheitsvorfälle</span>
+          <div class="btn-row">
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 12px" onclick="checkIntegrity()" data-i18n="btn_check_integrity">🔍 Integrität prüfen</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 12px" onclick="loadIncidents()" data-i18n="btn_refresh">↻ Aktualisieren</button>
+          </div>
+        </div>
+        <div id="dsgvo-deadlines"></div>
+        <table class="comp-table">
+          <thead><tr>
+            <th data-i18n="th_id">ID</th><th data-i18n="th_type">Typ</th><th data-i18n="th_severity">Schwere</th><th data-i18n="th_title">Titel</th><th data-i18n="th_status">Status</th><th>DSGVO</th><th data-i18n="th_created">Erstellt</th>
+          </tr></thead>
+          <tbody id="inc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Audit-Log ──────────────────────────────────────────── -->
+    <div id="sub-audit" class="sub-content">
+      <div class="card">
+        <div class="comp-panel-header">
+          <span class="comp-card-title">Audit-Log <span id="audit-count" style="font-weight:400;color:var(--fg2)"></span></span>
+          <div class="btn-row">
+            <select id="audit-lvl-filter" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--fg);padding:4px 8px;font-size:12px" onchange="loadAuditLog()">
+              <option value="" data-i18n="opt_all_levels">Alle Level</option>
+              <option value="AUDIT">AUDIT</option>
+              <option value="SECURITY">SECURITY</option>
+              <option value="CRITICAL">CRITICAL</option>
+              <option value="WARN">WARN</option>
+              <option value="INFO">INFO</option>
+            </select>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 12px" onclick="verifyAuditChain()" data-i18n="btn_verify_chain">🔐 Kette prüfen</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 12px" onclick="exportAuditLog()" data-i18n="btn_export">📥 Export</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:4px 12px" onclick="loadAuditLog()">↻</button>
+          </div>
+        </div>
+        <div id="audit-log-body" class="log" style="height:400px;font-size:12px"></div>
+      </div>
+    </div>
+
+  </div><!-- /tab-compliance -->
+
   <!-- ── Toast-Benachrichtigung ──────────────────────────────────────────── -->
   <div id="toast" class="toast"></div>
 
   <script src="/static/js/app.js"></script>
+  <script>
+  // ════════════════════════════════════════════════════════════
+  //  COMPLIANCE TAB — JavaScript
+  // ════════════════════════════════════════════════════════════
+
+  // ── Sub-Tab Navigation ──────────────────────────────────────
+  document.querySelectorAll('.sub-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sub = btn.dataset.sub;
+      document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('sub-' + sub)?.classList.add('active');
+      if (sub === 'overview')  loadOverview();
+      if (sub === 'iso')       loadISO();
+      if (sub === 'dsgvo')     loadDSGVO();
+      if (sub === 'bsi')       loadBSI();
+      if (sub === 'incidents') loadIncidents();
+      if (sub === 'audit')     loadAuditLog();
+    });
+  });
+
+  // Compliance laden wenn Haupt-Tab aktiviert wird
+  document.querySelector('[data-tab="compliance"]').addEventListener('click', () => {
+    loadOverview();
+  });
+
+  // ── Ring-Chart ──────────────────────────────────────────────
+  function setRing(id, pct) {
+    const circ = 2 * Math.PI * 30; // r=30
+    const el   = document.getElementById(id);
+    if (!el) return;
+    el.style.strokeDasharray = `${(pct / 100) * circ} ${circ}`;
+    el.style.stroke = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--orange)' : 'var(--red)';
+  }
+
+  // ── Übersicht laden ─────────────────────────────────────────
+  async function loadOverview() {
+    document.getElementById('comp-last-update').textContent =
+      'Stand: ' + new Date().toLocaleTimeString('de-DE');
+
+    const r = await fetch('/api/compliance/status').catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+
+    // Scores
+    const iso  = d.iso27001 || {};
+    const dsgvo = d.dsgvo || {};
+    const bsi  = d.bsi || {};
+    const inc  = d.incidents || {};
+    const vault = d.vault || {};
+
+    setRing('ring-iso',   iso.percentage  || 0);
+    setRing('ring-dsgvo', dsgvo.percentage || 0);
+    setRing('ring-bsi',   bsi.percentage  || 0);
+
+    document.getElementById('iso-pct').textContent  = (iso.percentage  || 0) + '%';
+    document.getElementById('dsgvo-pct').textContent = (dsgvo.percentage || 0) + '%';
+    document.getElementById('bsi-pct').textContent  = (bsi.percentage  || 0) + '%';
+    document.getElementById('iso-lbl').textContent  = iso.score  || '-';
+    document.getElementById('dsgvo-lbl').textContent = dsgvo.score || '-';
+    document.getElementById('bsi-lbl').textContent  = bsi.score  || '-';
+
+    // Vorfälle
+    document.getElementById('ov-incidents').innerHTML = `
+      <div class="comp-stat"><span class="comp-stat-n" style="color:var(--red)">${inc.critical||0}</span><span class="comp-stat-l">Kritisch</span></div>
+      <div class="comp-stat"><span class="comp-stat-n" style="color:var(--orange)">${inc.open||0}</span><span class="comp-stat-l">Offen</span></div>
+      <div class="comp-stat"><span class="comp-stat-n" style="color:var(--blue)">${inc.dsgvo_pending||0}</span><span class="comp-stat-l">DSGVO-Frist</span></div>
+      <div class="comp-stat"><span class="comp-stat-n" style="color:var(--green)">${inc.resolved||0}</span><span class="comp-stat-l">Behoben</span></div>`;
+
+    if ((inc.dsgvo_overdue||[]).length > 0) {
+      showToast('⛔ DSGVO Art.33 Frist überfällig!', 'err');
+    }
+
+    // Sicherheitsstatus
+    const checks = dsgvo.checks || {};
+    document.getElementById('ov-security').innerHTML = buildCheckList([
+      { label: 'Verschlüsselter Key-Vault',  ok: vault.vault_exists },
+      { label: 'Vault geladen (Keys aktiv)', ok: vault.cache_loaded || vault.env_anthropic },
+      { label: 'Anthropic-Key konfiguriert', ok: vault.env_anthropic },
+      { label: 'Audit-Log aktiv',            ok: d.audit_active },
+      { label: 'DSGVO-VVT vorhanden',        ok: checks.vvt_exists },
+      { label: 'Einwilligung konfiguriert',  ok: checks.consent_tracking },
+    ]);
+  }
+
+  // ── ISO 27001 ───────────────────────────────────────────────
+  async function loadISO() {
+    document.getElementById('iso-body').innerHTML = '<div class="spinner"></div>';
+    const r = await fetch('/api/compliance/iso27001').catch(() => null);
+    if (!r?.ok) { document.getElementById('iso-body').innerHTML = '<span style="color:var(--fg2)">Fehler</span>'; return; }
+    const d = await r.json();
+    let html = '';
+    for (const [domain, ctrls] of Object.entries(d.controls || {})) {
+      html += `<div class="comp-domain">
+        <div class="comp-domain-title">${domain}</div>`;
+      for (const c of ctrls) {
+        const color = c.implemented ? 'var(--green)' : c.partial ? 'var(--orange)' : 'var(--red)';
+        const label = c.implemented ? 'Implementiert' : c.partial ? 'Teilweise' : 'Ausstehend';
+        html += `<div class="comp-ctrl">
+          <span class="comp-ctrl-id">${c.id}</span>
+          <span class="comp-ctrl-name">${c.name}</span>
+          <span class="comp-ctrl-status" style="color:${color}">${label}</span>
+        </div>
+        <div class="comp-ctrl-desc">${c.description}</div>`;
+      }
+      html += '</div>';
+    }
+    document.getElementById('iso-body').innerHTML = html;
+  }
+
+  // ── DSGVO ───────────────────────────────────────────────────
+  async function loadDSGVO() {
+    const r = await fetch('/api/compliance/dsgvo').catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+
+    // Checks
+    const checks = d.checks || {};
+    document.getElementById('dsgvo-checks-body').innerHTML = buildCheckList([
+      { label: 'VVT (Art. 30)',                ok: checks.vvt_exists },
+      { label: 'Aufbewahrungsfristen',          ok: checks.retention_configured },
+      { label: 'Verschlüsselter Vault',         ok: checks.vault_enabled },
+      { label: 'Audit-Logging',                 ok: checks.audit_logging },
+      { label: 'Einwilligungstracking',         ok: checks.consent_tracking },
+      { label: 'DSFA abgeschlossen',            ok: checks.dsfa_completed },
+    ]);
+
+    // Fristen
+    const ret = d.retention || {};
+    const retLabels = {
+      scan_history: 'Scan-Verlauf', pdf_reports: 'PDF-Reports',
+      auth_logs: 'Auth-Logs', gpt_analyses: 'KI-Analysen',
+      audit_log: 'Audit-Log', incident_reports: 'Vorfallsberichte',
+    };
+    let retHtml = '';
+    for (const [k, days] of Object.entries(ret)) {
+      retHtml += `<div class="comp-ret-row">
+        <span>${retLabels[k] || k}</span>
+        <span class="comp-ret-days">${days} Tage</span>
+      </div>`;
+    }
+    document.getElementById('dsgvo-retention-body').innerHTML =
+      retHtml || '<span style="color:var(--fg2)">Standard-Fristen aktiv</span>';
+  }
+
+  // ── BSI ─────────────────────────────────────────────────────
+  async function loadBSI() {
+    document.getElementById('bsi-body').innerHTML = '<div class="spinner"></div>';
+    const r = await fetch('/api/compliance/bsi').catch(() => null);
+    if (!r?.ok) { document.getElementById('bsi-body').innerHTML = '<span style="color:var(--fg2)">Fehler</span>'; return; }
+    const d = await r.json();
+    let html = '';
+    for (const b of (d.bausteine || [])) {
+      const color = b.implemented ? 'var(--green)' : 'var(--orange)';
+      const icon  = b.implemented ? '✓' : '○';
+      html += `<div class="comp-ctrl">
+        <span class="comp-ctrl-id" style="color:var(--orange)">${b.id}</span>
+        <span class="comp-ctrl-name">${b.name}</span>
+        <span class="comp-ctrl-status" style="color:${color}">${icon} ${b.status}</span>
+      </div>
+      <div class="comp-ctrl-desc">${b.description}</div>`;
+    }
+    document.getElementById('bsi-body').innerHTML = html;
+  }
+
+  // ── Vorfälle ────────────────────────────────────────────────
+  async function loadIncidents() {
+    const r = await fetch('/api/compliance/incidents').catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+
+    // DSGVO-Deadlines
+    const overdue = d.summary?.dsgvo_overdue || [];
+    document.getElementById('dsgvo-deadlines').innerHTML = overdue.map(i =>
+      `<div class="comp-alert-err">⛔ DSGVO Art.33 ÜBERFÄLLIG: ${i.id} — ${i.title} (${i.hours_overdue}h überfällig)</div>`
+    ).join('');
+
+    document.getElementById('inc-tbody').innerHTML =
+      (d.incidents || []).map(i => {
+        const sevColor = {critical:'var(--red)',high:'var(--orange)',medium:'var(--orange)',low:'var(--green)'}[i.severity] || 'var(--fg2)';
+        const dsgvo = i.dsgvo_art33 ? `<span class="comp-chip" style="color:var(--orange)">Art.33${i.dsgvo_notified?' ✓':' ⚠️'}</span>` : '—';
+        return `<tr>
+          <td style="font-family:var(--font-mono);font-size:11px">${i.id}</td>
+          <td style="color:var(--fg2)">${i.type}</td>
+          <td><span style="color:${sevColor};font-weight:600">${i.severity}</span></td>
+          <td>${i.title}</td>
+          <td><span class="comp-chip">${i.status}</span></td>
+          <td>${dsgvo}</td>
+          <td style="color:var(--fg2);font-size:11px">${(i.created_at||'').substring(0,16)}</td>
+        </tr>`;
+      }).join('') ||
+      '<tr><td colspan="7" style="text-align:center;color:var(--fg2);padding:20px">Keine Vorfälle</td></tr>';
+  }
+
+  // ── Audit-Log ───────────────────────────────────────────────
+  async function loadAuditLog() {
+    const lvl   = document.getElementById('audit-lvl-filter').value;
+    const params = lvl ? `?level=${lvl}` : '';
+    const r = await fetch('/api/compliance/audit' + params).catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+
+    document.getElementById('audit-count').textContent = `(${d.entries?.length || 0})`;
+
+    const lvlColor = { AUDIT:'var(--purple)', SECURITY:'var(--red)', CRITICAL:'var(--red)',
+                       WARN:'var(--orange)', INFO:'var(--green)', DEBUG:'var(--fg2)' };
+    document.getElementById('audit-log-body').innerHTML =
+      [...(d.entries || [])].reverse().map(e => {
+        const col = lvlColor[e.level] || 'var(--fg2)';
+        return `<div class="log-plain" style="border-bottom:1px solid var(--bg4);padding:3px 0">` +
+          `<span style="color:var(--fg2)">${(e.timestamp||'').substring(11,19)}</span> ` +
+          `<span style="color:${col};font-weight:600;width:64px;display:inline-block">${e.level}</span> ` +
+          `<span style="color:var(--blue);width:90px;display:inline-block">${e.category}</span> ` +
+          `<span>${e.action}</span>` +
+          (e.user && e.user !== 'system' ? ` <span style="color:var(--fg2)">[${e.user}]</span>` : '') +
+          `</div>`;
+      }).join('') || '<span style="color:var(--fg2)">Keine Einträge</span>';
+  }
+
+  async function verifyAuditChain() {
+    const r = await fetch('/api/compliance/audit/verify').catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+    showToast(d.valid
+      ? T('msg_chain_ok', {n: d.entries})
+      : T('msg_chain_fail', {n: d.errors?.length}),
+      d.valid ? 'ok' : 'err');
+  }
+
+  async function exportAuditLog() {
+    const r = await fetch('/api/compliance/audit/export', {method:'POST'}).catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+    showToast(`📥 ${d.count} Einträge → ${d.path}`, 'ok');
+  }
+
+  // ── DSGVO Aktionen ──────────────────────────────────────────
+  async function dsgvoExport() {
+    const r = await fetch('/api/compliance/dsgvo/export', {method:'POST'}).catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+    document.getElementById('dsgvo-action-msg').textContent =
+      `✅ Export: ${d.scan_count} Scans → ${d.output_path}`;
+    showToast('📦 DSGVO-Export abgeschlossen', 'ok');
+  }
+
+  async function dsgvoInitVVT() {
+    const r = await fetch('/api/compliance/dsgvo/init-vvt', {method:'POST'}).catch(() => null);
+    if (!r?.ok) return;
+    document.getElementById('dsgvo-action-msg').textContent = '✅ VVT erstellt. Bitte Verantwortlichen-Daten eintragen.';
+    showToast('📋 VVT initialisiert', 'ok');
+    loadDSGVO();
+  }
+
+  async function dsgvoRetention() {
+    const r = await fetch('/api/compliance/dsgvo/retention', {method:'POST'}).catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+    document.getElementById('dsgvo-action-msg').textContent =
+      `✅ Gelöscht: ${d.deleted} | Behalten: ${d.kept}`;
+    showToast(`🗑️ ${d.deleted} Dateien gelöscht`, 'ok');
+  }
+
+  async function dsgvoDeleteAll() {
+    if (prompt('Alle Scan-Daten löschen?\nBestätigen mit LOESCHEN:') !== 'LOESCHEN') return;
+    const r = await fetch('/api/compliance/dsgvo/delete-all', {method:'POST'}).catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+    showToast(`✅ ${d.deleted_count} Dateien gelöscht (Art. 17)`, 'ok');
+  }
+
+  async function checkIntegrity() {
+    const r = await fetch('/api/compliance/incidents/check-integrity', {method:'POST'}).catch(() => null);
+    if (!r?.ok) return;
+    const d = await r.json();
+    showToast(d.tampering_detected
+      ? T('msg_tamper_found', {id: d.incident_id})
+      : T('msg_tamper_ok'), d.tampering_detected ? 'err' : 'ok');
+    loadIncidents();
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // Sprachsystem / Language System
+  // ════════════════════════════════════════════════════════════
+
+  const TRANSLATIONS = {
+    de: {
+      // Header
+      badge_defensive:      'Defensiv',
+      // Tabs
+      tab_classic:          '🔎 Classic Scan',
+      tab_agents:           '🤖 Agent Mode',
+      tab_settings:         '⚙️ Einstellungen',
+      tab_history:          '📊 Historie',
+      tab_monitor:          '📡 Monitoring',
+      tab_compliance:       '🛡️ Compliance',
+      tab_admin:            '👤 Benutzer',
+      // Labels allgemein
+      lbl_target:           'Ziel-IP / Hostname',
+      lbl_nmap_args:        'Nmap-Parameter',
+      lbl_gpt_model:        'GPT-Modell',
+      lbl_claude_model:     'Claude-Modell',
+      lbl_interval:         'Intervall',
+      lbl_language:         'Sprache',
+      lbl_default_target:   'Standard-Ziel',
+      lbl_default_nmap:     'Standard Nmap-Parameter',
+      lbl_anthropic_key:    'Anthropic API-Key (für Claude Agents)',
+      lbl_select_target:    'Ziel auswählen',
+      lbl_loading:          'Laden…',
+      lbl_scans:            'Scans',
+      lbl_changes:          'Änderungen',
+      lbl_last_scan:        'Letzter Scan',
+      lbl_next_scan:        'Nächster Scan',
+      // Buttons
+      btn_scan:             '▶ Scan starten',
+      btn_gpt:              '🤖 GPT-Analyse',
+      btn_sysinfo:          '📊 System-Info',
+      btn_save_report:      '💾 Report speichern',
+      btn_clear_log:        '✕ Log leeren',
+      btn_full_analysis:    '▶ Vollanalyse starten',
+      btn_save:             'Speichern',
+      btn_save_settings:    'Einstellungen speichern',
+      btn_refresh:          '↻ Aktualisieren',
+      btn_load_targets:     '↻ Targets laden',
+      btn_load_diff:        'Vergleich laden',
+      btn_monitor_start:    '▶ Monitoring starten',
+      btn_stop:             '■ Stoppen',
+      btn_check_integrity:  '🔍 Integrität prüfen',
+      btn_verify_chain:     '🔐 Kette prüfen',
+      btn_export:           '📥 Export',
+      btn_dsgvo_export:     '📦 Export (Art. 20)',
+      btn_dsgvo_vvt:        '📋 VVT erstellen (Art. 30)',
+      btn_dsgvo_retention:  '🗑️ Aufbewahrung anwenden',
+      btn_dsgvo_delete:     '⚠️ Alle Daten löschen (Art. 17)',
+      // Status
+      status_ready:         'Bereit',
+      status_stopped:       'Gestoppt',
+      status_no_target:     'Kein Target gewählt',
+      status_running:       'Läuft…',
+      status_done:          'Fertig',
+      status_error:         'Fehler',
+      // Abschnitte / Überschriften
+      h_api_keys:           'API-Keys',
+      h_general:            'Allgemein',
+      h_sysinfo:            'System-Info',
+      h_scan_history:       'Scan-Verlauf',
+      h_diff:               'Vergleich (letzte 2 Scans)',
+      h_monitor_log:        'Monitoring Live-Log',
+      h_agent_log:          'Agent Live-Log',
+      h_security_incidents: 'Sicherheitsvorfälle',
+      h_security_status:    'Sicherheitsstatus',
+      h_iso_controls:       'ISO 27001:2022 — Kontrollbereiche',
+      h_compliance_checks:  'Compliance-Checks',
+      h_retention:          'Aufbewahrungsfristen',
+      h_dsgvo_actions:      'Aktionen (DSGVO-Rechte)',
+      h_bsi_kompendium:     'BSI IT-Grundschutz Kompendium 2023',
+      // Optionen / Dropdowns
+      opt_select_target:    '— Bitte Target wählen —',
+      opt_all_levels:       'Alle Level',
+      opt_5min:             '5 Minuten (Test)',
+      opt_30min:            '30 Minuten',
+      opt_1h:               '1 Stunde',
+      opt_6h:               '6 Stunden',
+      opt_12h:              '12 Stunden',
+      opt_24h:              '24 Stunden',
+      // Compliance sub-tabs
+      sub_overview:         'Übersicht',
+      sub_incidents:        'Vorfälle',
+      // Tabellen-Header
+      th_id:                'ID',
+      th_type:              'Typ',
+      th_severity:          'Schwere',
+      th_title:             'Titel',
+      th_status:            'Status',
+      th_created:           'Erstellt',
+      // Leer-Zustände
+      txt_no_history:       'Kein Target gewählt oder keine History vorhanden.',
+      txt_no_diff:          'Wähle ein Target und klicke "Vergleich laden".',
+      // Progress Steps
+      step_recon:           'Recon',
+      step_vuln:            'Vuln-Analyse',
+      step_remed:           'Remediation',
+      step_done:            'Fertig',
+      // Admin Tab
+      h_user_mgmt:          '👤 Benutzerverwaltung',
+      h_new_user:           '➕ Neuen Benutzer anlegen',
+      lbl_username:         'Benutzername',
+      lbl_password:         'Passwort (min. 8 Zeichen)',
+      lbl_role:             'Rolle',
+      btn_create_user:      '➕ Benutzer anlegen',
+      h_roles:              '🔑 Rollen & Berechtigungen',
+      role_admin_desc:      'Vollzugriff: Konfiguration, Benutzerverwaltung, alle Operationen',
+      role_analyst_desc:    'Scans starten, Reports erstellen, Monitoring, Audit lesen',
+      role_auditor_desc:    'Audit-Log, Compliance-Berichte, DSGVO-Export lesen',
+      role_viewer_desc:     'Nur vorhandene Daten ansehen, keine Aktionen',
+      // SMTP
+      h_smtp:               '📧 E-Mail-Alerts (SMTP)',
+      smtp_desc:            'Alert wird automatisch gesendet wenn kritische Ports oder CVEs gefunden werden.',
+      lbl_smtp_host:        'SMTP-Host',
+      lbl_smtp_port:        'Port',
+      lbl_smtp_user:        'Benutzername / E-Mail',
+      lbl_smtp_pass:        'Passwort / App-Passwort',
+      lbl_smtp_from:        'Absender (From)',
+      lbl_smtp_to:          'Empfänger (To)',
+      btn_save_smtp:        '💾 SMTP speichern',
+      btn_test_smtp:        '📤 Test-Mail senden',
+      smtp_ports_title:     'Kritische Ports die automatisch alarmieren:',
+      smtp_ports_list:      '21 (FTP) · 23 (Telnet) · 445 (SMB) · 3389 (RDP) · 5900 (VNC) · 6379 (Redis) · 27017 (MongoDB) · u.v.m.',
+      // Backup
+      h_backup:             '💾 Datensicherung (Backup)',
+      backup_desc:          'Tägliches automatisches Backup um 02:00 Uhr · Aufbewahrung: 30 Tage · Speicherort: backup/',
+      backup_what_title:    'Was wird gesichert:',
+      backup_what_content:  'Scan-Historie · Reports · Logs · Compliance-Daten · Benutzerdaten · Vault · Konfiguration',
+      backup_retention:     'Aufbewahrungsfristen: Scans 1 Jahr · Reports 3 Jahre · Audit-Log 3 Jahre',
+      btn_backup_now:       '💾 Jetzt sichern',
+      btn_backup_cleanup:   '🗑 Alte löschen (>30 Tage)',
+      // JS-Nachrichten (für T() Funktion)
+      msg_user_required:    'Benutzername + Passwort erforderlich',
+      msg_confirm_delete:   'Benutzer "{u}" wirklich löschen?',
+      msg_user_created:     '✅ Benutzer "{u}" angelegt ({r})',
+      msg_user_deleted:     '✅ Benutzer "{u}" gelöscht',
+      msg_role_changed:     '✅ Rolle von "{u}" → {r}',
+      msg_smtp_saved:       '✅ SMTP gespeichert',
+      msg_smtp_sending:     'Sende Test-Mail…',
+      msg_smtp_sent:        '✅ Test-Mail an {to} gesendet',
+      msg_backup_creating:  'Erstelle Backup…',
+      msg_backup_done:      '✅ Backup: {f} ({s} MB)',
+      msg_backup_cleaned:   '🗑 {d} alte Backup(s) gelöscht, {k} behalten',
+      msg_chain_ok:         '✅ Kette integer — {n} Einträge',
+      msg_chain_fail:       '⛔ Kette KOMPROMITTIERT — {n} Fehler!',
+      msg_tamper_ok:        '✅ Audit-Integrität OK',
+      msg_tamper_found:     '⚠️ Manipulation erkannt! Vorfall: {id}',
+      lbl_no_backups:       'Noch keine Backups vorhanden.',
+      lbl_load_users:       'Lade Benutzer…',
+      lbl_days:             'Tage',
+      lbl_active:           '✓ Aktiv',
+      lbl_inactive:         '✗ Inaktiv',
+      lbl_totp_on:          '✓ Aktiv',
+      lbl_totp_off:         '✗ Aus',
+      lbl_delete:           '🗑 Löschen',
+      col_filename:         'Dateiname',
+      col_size:             'Größe',
+      col_date:             'Datum',
+    },
+    en: {
+      // Header
+      badge_defensive:      'Defensive',
+      // Tabs
+      tab_classic:          '🔎 Classic Scan',
+      tab_agents:           '🤖 Agent Mode',
+      tab_settings:         '⚙️ Settings',
+      tab_history:          '📊 History',
+      tab_monitor:          '📡 Monitoring',
+      tab_compliance:       '🛡️ Compliance',
+      tab_admin:            '👤 Users',
+      // Labels allgemein
+      lbl_target:           'Target IP / Hostname',
+      lbl_nmap_args:        'Nmap Arguments',
+      lbl_gpt_model:        'GPT Model',
+      lbl_claude_model:     'Claude Model',
+      lbl_interval:         'Interval',
+      lbl_language:         'Language',
+      lbl_default_target:   'Default Target',
+      lbl_default_nmap:     'Default Nmap Arguments',
+      lbl_anthropic_key:    'Anthropic API Key (for Claude Agents)',
+      lbl_select_target:    'Select Target',
+      lbl_loading:          'Loading…',
+      lbl_scans:            'Scans',
+      lbl_changes:          'Changes',
+      lbl_last_scan:        'Last Scan',
+      lbl_next_scan:        'Next Scan',
+      // Buttons
+      btn_scan:             '▶ Start Scan',
+      btn_gpt:              '🤖 GPT Analysis',
+      btn_sysinfo:          '📊 System Info',
+      btn_save_report:      '💾 Save Report',
+      btn_clear_log:        '✕ Clear Log',
+      btn_full_analysis:    '▶ Start Full Analysis',
+      btn_save:             'Save',
+      btn_save_settings:    'Save Settings',
+      btn_refresh:          '↻ Refresh',
+      btn_load_targets:     '↻ Load Targets',
+      btn_load_diff:        'Load Comparison',
+      btn_monitor_start:    '▶ Start Monitoring',
+      btn_stop:             '■ Stop',
+      btn_check_integrity:  '🔍 Check Integrity',
+      btn_verify_chain:     '🔐 Verify Chain',
+      btn_export:           '📥 Export',
+      btn_dsgvo_export:     '📦 Export (Art. 20)',
+      btn_dsgvo_vvt:        '📋 Create VVT (Art. 30)',
+      btn_dsgvo_retention:  '🗑️ Apply Retention',
+      btn_dsgvo_delete:     '⚠️ Delete All Data (Art. 17)',
+      // Status
+      status_ready:         'Ready',
+      status_stopped:       'Stopped',
+      status_no_target:     'No target selected',
+      status_running:       'Running…',
+      status_done:          'Done',
+      status_error:         'Error',
+      // Sections / Headings
+      h_api_keys:           'API Keys',
+      h_general:            'General',
+      h_sysinfo:            'System Info',
+      h_scan_history:       'Scan History',
+      h_diff:               'Comparison (last 2 scans)',
+      h_monitor_log:        'Monitoring Live Log',
+      h_agent_log:          'Agent Live Log',
+      h_security_incidents: 'Security Incidents',
+      h_security_status:    'Security Status',
+      h_iso_controls:       'ISO 27001:2022 — Control Areas',
+      h_compliance_checks:  'Compliance Checks',
+      h_retention:          'Retention Periods',
+      h_dsgvo_actions:      'Actions (GDPR Rights)',
+      h_bsi_kompendium:     'BSI IT-Grundschutz Compendium 2023',
+      // Options / Dropdowns
+      opt_select_target:    '— Please select a target —',
+      opt_all_levels:       'All Levels',
+      opt_5min:             '5 Minutes (Test)',
+      opt_30min:            '30 Minutes',
+      opt_1h:               '1 Hour',
+      opt_6h:               '6 Hours',
+      opt_12h:              '12 Hours',
+      opt_24h:              '24 Hours',
+      // Compliance sub-tabs
+      sub_overview:         'Overview',
+      sub_incidents:        'Incidents',
+      // Table headers
+      th_id:                'ID',
+      th_type:              'Type',
+      th_severity:          'Severity',
+      th_title:             'Title',
+      th_status:            'Status',
+      th_created:           'Created',
+      // Empty states
+      txt_no_history:       'No target selected or no history available.',
+      txt_no_diff:          'Select a target and click "Load Comparison".',
+      // Progress Steps
+      step_recon:           'Recon',
+      step_vuln:            'Vuln Analysis',
+      step_remed:           'Remediation',
+      step_done:            'Done',
+      // Admin Tab
+      h_user_mgmt:          '👤 User Management',
+      h_new_user:           '➕ Create New User',
+      lbl_username:         'Username',
+      lbl_password:         'Password (min. 8 characters)',
+      lbl_role:             'Role',
+      btn_create_user:      '➕ Create User',
+      h_roles:              '🔑 Roles & Permissions',
+      role_admin_desc:      'Full access: Configuration, user management, all operations',
+      role_analyst_desc:    'Run scans, create reports, monitoring, read audit log',
+      role_auditor_desc:    'Read audit log, compliance reports, GDPR export',
+      role_viewer_desc:     'View existing data only, no actions',
+      // SMTP
+      h_smtp:               '📧 E-Mail Alerts (SMTP)',
+      smtp_desc:            'Alert is sent automatically when critical ports or CVEs are found.',
+      lbl_smtp_host:        'SMTP Host',
+      lbl_smtp_port:        'Port',
+      lbl_smtp_user:        'Username / E-Mail',
+      lbl_smtp_pass:        'Password / App Password',
+      lbl_smtp_from:        'Sender (From)',
+      lbl_smtp_to:          'Recipient (To)',
+      btn_save_smtp:        '💾 Save SMTP',
+      btn_test_smtp:        '📤 Send Test Mail',
+      smtp_ports_title:     'Critical ports that trigger automatic alerts:',
+      smtp_ports_list:      '21 (FTP) · 23 (Telnet) · 445 (SMB) · 3389 (RDP) · 5900 (VNC) · 6379 (Redis) · 27017 (MongoDB) · and more',
+      // Backup
+      h_backup:             '💾 Data Backup',
+      backup_desc:          'Daily automatic backup at 02:00 · Retention: 30 days · Location: backup/',
+      backup_what_title:    'What is backed up:',
+      backup_what_content:  'Scan history · Reports · Logs · Compliance data · User data · Vault · Configuration',
+      backup_retention:     'Retention: Scans 1 year · Reports 3 years · Audit log 3 years',
+      btn_backup_now:       '💾 Backup Now',
+      btn_backup_cleanup:   '🗑 Delete old (>30 days)',
+      // JS messages
+      msg_user_required:    'Username and password required',
+      msg_confirm_delete:   'Really delete user "{u}"?',
+      msg_user_created:     '✅ User "{u}" created ({r})',
+      msg_user_deleted:     '✅ User "{u}" deleted',
+      msg_role_changed:     '✅ Role of "{u}" → {r}',
+      msg_smtp_saved:       '✅ SMTP saved',
+      msg_smtp_sending:     'Sending test mail…',
+      msg_smtp_sent:        '✅ Test mail sent to {to}',
+      msg_backup_creating:  'Creating backup…',
+      msg_backup_done:      '✅ Backup: {f} ({s} MB)',
+      msg_backup_cleaned:   '🗑 {d} old backup(s) deleted, {k} kept',
+      msg_chain_ok:         '✅ Chain intact — {n} entries',
+      msg_chain_fail:       '⛔ Chain COMPROMISED — {n} errors!',
+      msg_tamper_ok:        '✅ Audit integrity OK',
+      msg_tamper_found:     '⚠️ Tampering detected! Incident: {id}',
+      lbl_no_backups:       'No backups yet.',
+      lbl_load_users:       'Loading users…',
+      lbl_days:             'days',
+      lbl_active:           '✓ Active',
+      lbl_inactive:         '✗ Inactive',
+      lbl_totp_on:          '✓ Active',
+      lbl_totp_off:         '✗ Off',
+      lbl_delete:           '🗑 Delete',
+      col_filename:         'Filename',
+      col_size:             'Size',
+      col_date:             'Date',
+    }
+  };
+
+  let currentLang = localStorage.getItem('gv_lang') || 'de';
+
+  // Übersetzungs-Helfer: T('key') oder T('key', {u:'Max', r:'admin'})
+  function T(key, vars) {
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS.de;
+    let s = t[key] || TRANSLATIONS.de[key] || key;
+    if (vars) Object.entries(vars).forEach(([k,v]) => { s = s.replaceAll('{'+k+'}', v); });
+    return s;
+  }
+
+  function applyLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('gv_lang', lang);
+    const t = TRANSLATIONS[lang] || TRANSLATIONS.de;
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key] !== undefined) el.textContent = t[key];
+    });
+
+    // HTML lang-Attribut
+    document.documentElement.lang = lang;
+
+    // Toggle-Button aktualisieren
+    const btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = lang === 'de' ? '🌐 DE' : '🌐 EN';
+
+    // Sprachauswahl im Settings-Tab synchronisieren
+    const sel = document.getElementById('s-lang');
+    if (sel) sel.value = lang;
+  }
+
+  function toggleLang() {
+    applyLang(currentLang === 'de' ? 'en' : 'de');
+  }
+
+  function setLang(lang) {
+    applyLang(lang);
+  }
+
+  // Beim Laden anwenden
+  applyLang(currentLang);
+
+  // ── Hilfsfunktionen ─────────────────────────────────────────
+  function buildCheckList(items) {
+    return items.map(({label, ok}) => `
+      <div class="comp-check">
+        <span class="comp-check-dot" style="background:${ok?'var(--green)':'var(--red)'}"></span>
+        <span class="comp-check-lbl">${label}</span>
+        <span style="font-size:11px;font-weight:600;color:${ok?'var(--green)':'var(--red)'}">${ok?'OK':'Fehlt'}</span>
+      </div>`).join('');
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // Tab: Benutzerverwaltung
+  // ════════════════════════════════════════════════════════════
+
+  async function loadUsers() {
+    const r = await fetch('/api/users');
+    const d = await r.json();
+    const tbody = document.getElementById('users-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    (d.users || []).forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="padding:8px 12px;font-weight:600">${u.username}</td>
+        <td style="padding:8px 12px">
+          <select onchange="changeRole('${u.username}', this.value)" style="background:var(--bg3);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:2px 6px">
+            ${['admin','analyst','viewer','auditor'].map(r =>
+              `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`
+            ).join('')}
+          </select>
+        </td>
+        <td style="padding:8px 12px;color:${u.active?'var(--green)':'var(--red)'}">${u.active?T('lbl_active'):T('lbl_inactive')}</td>
+        <td style="padding:8px 12px;color:${u.totp_enabled?'var(--green)':'var(--fg2)'}">${u.totp_enabled?T('lbl_totp_on'):T('lbl_totp_off')}</td>
+        <td style="padding:8px 12px;color:var(--fg2);font-size:11px">${u.last_login ? u.last_login.replace('T',' ').slice(0,16) : '—'}</td>
+        <td style="padding:8px 12px;text-align:center">${u.login_count||0}</td>
+        <td style="padding:8px 12px">
+          <button onclick="deleteUser('${u.username}')" class="btn btn-ghost" style="padding:3px 10px;font-size:11px">${T('lbl_delete')}</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function createUser() {
+    const username = document.getElementById('new-username').value.trim();
+    const password = document.getElementById('new-password').value.trim();
+    const role     = document.getElementById('new-role').value;
+    if (!username || !password) { showToast(T('msg_user_required'), 'err'); return; }
+    const r = await fetch('/api/users', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username, password, role})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(T('msg_user_created', {u: username, r: role}), 'ok');
+      document.getElementById('new-username').value = '';
+      document.getElementById('new-password').value = '';
+      loadUsers();
+    } else {
+      showToast(`${T('status_error')}: ${d.error}`, 'err');
+    }
+  }
+
+  async function deleteUser(username) {
+    if (!confirm(T('msg_confirm_delete', {u: username}))) return;
+    const r = await fetch(`/api/users/${username}`, {method:'DELETE'});
+    const d = await r.json();
+    if (d.ok) { showToast(T('msg_user_deleted', {u: username}), 'ok'); loadUsers(); }
+    else showToast(`${T('status_error')}: ${d.error}`, 'err');
+  }
+
+  async function changeRole(username, role) {
+    const r = await fetch(`/api/users/${username}/role`, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({role})
+    });
+    const d = await r.json();
+    if (d.ok) showToast(T('msg_role_changed', {u: username, r: role}), 'ok');
+    else showToast(`${T('status_error')}: ${d.error}`, 'err');
+  }
+
+  async function saveSmtp() {
+    const fields = ['smtp-host','smtp-port','smtp-user','smtp-pass','smtp-from','smtp-to'];
+    const [host,port,user,password,from_,to] = fields.map(id => document.getElementById(id)?.value || '');
+    const r = await fetch('/api/alerts/smtp', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({host, port: parseInt(port)||587, user, password, from: from_, to})
+    });
+    const d = await r.json();
+    showToast(d.ok ? T('msg_smtp_saved') : `${T('status_error')}: ${d.error}`, d.ok ? 'ok' : 'err');
+  }
+
+  async function testSmtp() {
+    showToast(T('msg_smtp_sending'), 'ok');
+    const r = await fetch('/api/alerts/test', {method:'POST'});
+    const d = await r.json();
+    showToast(d.ok ? T('msg_smtp_sent', {to: d.to}) : `${T('status_error')}: ${d.error}`, d.ok ? 'ok' : 'err');
+  }
+
+  async function loadBackups() {
+    const r = await fetch('/api/backup/list');
+    const d = await r.json();
+    const el = document.getElementById('backup-list');
+    if (!el) return;
+    if (!d.backups || d.backups.length === 0) {
+      el.innerHTML = `<span style="color:var(--fg2)">${T('lbl_no_backups')}</span>`;
+      return;
+    }
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+      <tr style="color:var(--fg2);border-bottom:1px solid var(--border)">
+        <th style="padding:4px 8px;text-align:left">${T('col_filename')}</th>
+        <th style="padding:4px 8px;text-align:right">${T('col_size')}</th>
+        <th style="padding:4px 8px;text-align:left">${T('col_date')}</th>
+      </tr>
+      ${d.backups.map(b => `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:6px 8px;font-family:monospace;font-size:11px">${b.filename}</td>
+        <td style="padding:6px 8px;text-align:right">${b.size_mb} MB</td>
+        <td style="padding:6px 8px;color:var(--fg2)">${b.created.slice(0,10)}</td>
+      </tr>`).join('')}
+    </table>`;
+  }
+
+  async function createBackup() {
+    showToast(T('msg_backup_creating'), 'ok');
+    const r = await fetch('/api/backup/create', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({label: 'manual'})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(T('msg_backup_done', {f: d.filename, s: d.size_mb}), 'ok');
+      loadBackups();
+    } else {
+      showToast(`${T('status_error')}: ${d.error}`, 'err');
+    }
+  }
+
+  async function cleanupBackups() {
+    const r = await fetch('/api/backup/cleanup', {method:'POST'});
+    const d = await r.json();
+    showToast(T('msg_backup_cleaned', {d: d.deleted, k: d.kept}), 'ok');
+    loadBackups();
+  }
+
+  // Tab-Aktivierung für Admin-Tab
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'admin') { loadUsers(); loadBackups(); }
+    });
+  });
+  </script>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       Tab 7: Benutzerverwaltung + E-Mail-Alerts
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-admin" class="tab-content">
+
+    <!-- Benutzer-Liste -->
+    <div class="card">
+      <h3 style="color:var(--accent);margin:0 0 16px">👤 Benutzerverwaltung</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="color:#667;text-align:left;border-bottom:1px solid #1e2a3a">
+            <th style="padding:6px 12px">Benutzer</th>
+            <th style="padding:6px 12px">Rolle</th>
+            <th style="padding:6px 12px">Status</th>
+            <th style="padding:6px 12px">TOTP</th>
+            <th style="padding:6px 12px">Letzter Login</th>
+            <th style="padding:6px 12px">Logins</th>
+            <th style="padding:6px 12px">Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr><td colspan="7" style="padding:20px;text-align:center;color:var(--fg2)" data-i18n="lbl_load_users">Lade Benutzer…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Neuen Benutzer anlegen -->
+    <div class="card" style="margin-top:16px">
+      <h3 style="color:var(--accent);margin:0 0 16px">➕ Neuen Benutzer anlegen</h3>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Benutzername</label>
+          <input id="new-username" type="text" placeholder="max.mustermann" spellcheck="false">
+        </div>
+        <div class="input-group">
+          <label>Passwort (min. 8 Zeichen)</label>
+          <input id="new-password" type="password" placeholder="Sicheres Passwort">
+        </div>
+        <div class="input-group">
+          <label>Rolle</label>
+          <select id="new-role" style="background:#1e2a3a;color:#e0e0e0;border:1px solid #2a3f5f;border-radius:6px;padding:8px 12px;width:100%">
+            <option value="viewer">viewer — Nur Lesen</option>
+            <option value="analyst" selected>analyst — Scans + Reports</option>
+            <option value="auditor">auditor — Compliance</option>
+            <option value="admin">admin — Vollzugriff</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="createUser()">➕ Benutzer anlegen</button>
+        <button class="btn btn-secondary" onclick="loadUsers()">🔄 Aktualisieren</button>
+      </div>
+    </div>
+
+    <!-- Rollen-Übersicht -->
+    <div class="card" style="margin-top:16px">
+      <h3 style="color:var(--accent);margin:0 0 12px">🔑 Rollen & Berechtigungen</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-size:12px">
+        <div style="background:#1e2a3a;border-radius:6px;padding:12px">
+          <div style="color:var(--red);font-weight:700;margin-bottom:6px">admin</div>
+          <div style="color:#999">Vollzugriff: Konfiguration, Benutzerverwaltung, alle Operationen</div>
+        </div>
+        <div style="background:#1e2a3a;border-radius:6px;padding:12px">
+          <div style="color:#f39c12;font-weight:700;margin-bottom:6px">analyst</div>
+          <div style="color:#999">Scans starten, Reports erstellen, Monitoring, Audit lesen</div>
+        </div>
+        <div style="background:#1e2a3a;border-radius:6px;padding:12px">
+          <div style="color:var(--green);font-weight:700;margin-bottom:6px">auditor</div>
+          <div style="color:#999">Audit-Log, Compliance-Berichte, DSGVO-Export lesen</div>
+        </div>
+        <div style="background:#1e2a3a;border-radius:6px;padding:12px">
+          <div style="color:#667;font-weight:700;margin-bottom:6px">viewer</div>
+          <div style="color:#999">Nur vorhandene Daten ansehen, keine Aktionen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-Mail-Alerts -->
+    <div class="card" style="margin-top:16px">
+      <h3 style="color:var(--accent);margin:0 0 4px">📧 E-Mail-Alerts (SMTP)</h3>
+      <p style="color:#667;font-size:12px;margin:0 0 16px">Alert wird automatisch gesendet wenn kritische Ports oder CVEs gefunden werden.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="input-group">
+          <label>SMTP-Host</label>
+          <input id="smtp-host" type="text" placeholder="smtp.gmail.com" spellcheck="false">
+        </div>
+        <div class="input-group">
+          <label>Port</label>
+          <input id="smtp-port" type="number" value="587">
+        </div>
+        <div class="input-group">
+          <label>Benutzername / E-Mail</label>
+          <input id="smtp-user" type="text" placeholder="dein@email.de" spellcheck="false">
+        </div>
+        <div class="input-group">
+          <label>Passwort / App-Passwort</label>
+          <input id="smtp-pass" type="password" placeholder="••••••••">
+        </div>
+        <div class="input-group">
+          <label>Absender (From)</label>
+          <input id="smtp-from" type="text" placeholder="ghostvenum@firma.de" spellcheck="false">
+        </div>
+        <div class="input-group">
+          <label>Empfänger (To)</label>
+          <input id="smtp-to" type="text" placeholder="security@firma.de" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-primary"   onclick="saveSmtp()">💾 SMTP speichern</button>
+        <button class="btn btn-secondary" onclick="testSmtp()">📤 Test-Mail senden</button>
+      </div>
+
+      <div style="margin-top:16px;background:#1e2a3a;border-radius:6px;padding:12px;font-size:12px;color:#667">
+        <strong style="color:#f39c12">Kritische Ports die automatisch alarmieren:</strong><br>
+        <span style="color:#999">21 (FTP) · 23 (Telnet) · 445 (SMB) · 3389 (RDP) · 5900 (VNC) · 6379 (Redis) · 27017 (MongoDB) · u.v.m.</span>
+      </div>
+    </div>
+
+    <!-- Backup -->
+    <div class="card" style="margin-top:16px">
+      <h3 style="color:var(--accent);margin:0 0 4px">💾 Datensicherung (Backup)</h3>
+      <p style="color:var(--fg2);font-size:12px;margin:0 0 16px">
+        Tägliches automatisches Backup um 02:00 Uhr · Aufbewahrung: 30 Tage · Speicherort: <code>backup/</code>
+      </p>
+
+      <div id="backup-list" style="margin-bottom:14px;font-size:13px">
+        <span style="color:var(--fg2)">Lade Backup-Liste…</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary"   onclick="createBackup()">💾 Jetzt sichern</button>
+        <button class="btn btn-secondary" onclick="loadBackups()">🔄 Aktualisieren</button>
+        <button class="btn btn-ghost"     onclick="cleanupBackups()">🗑 Alte löschen (&gt;30 Tage)</button>
+      </div>
+
+      <div style="margin-top:14px;background:var(--bg3);border-radius:6px;padding:12px;font-size:12px;color:var(--fg2)">
+        <strong style="color:var(--orange)">Was wird gesichert:</strong><br>
+        Scan-Historie · Reports · Logs · Compliance-Daten · Benutzerdaten · Vault · Konfiguration<br>
+        <strong style="color:var(--orange)">Aufbewahrungsfristen:</strong>
+        Scans 1 Jahr · Reports 3 Jahre · Audit-Log 3 Jahre
+      </div>
+    </div>
+
+  </div>
+
 </body>
 </html>

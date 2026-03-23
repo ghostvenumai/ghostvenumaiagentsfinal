@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>GhostVenumAI — Enterprise Compliance Dashboard</title>
+  <style>
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --surface2: #21262d;
+      --border:   #30363d;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --green:    #3fb950;
+      --yellow:   #d29922;
+      --red:      #f85149;
+      --blue:     #58a6ff;
+      --orange:   #db6d28;
+      --purple:   #bc8cff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; }
+
+    /* ── Header ── */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header .badge { background: #1f6feb; color: #fff; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .5px; }
+
+    /* ── Layout ── */
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    @media (max-width: 900px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ── Cards ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+    .card h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 16px; }
+    .card.alert-red    { border-left: 3px solid var(--red); }
+    .card.alert-yellow { border-left: 3px solid var(--yellow); }
+    .card.alert-green  { border-left: 3px solid var(--green); }
+
+    /* ── Score-Widgets ── */
+    .score-widget { text-align: center; }
+    .score-ring { width: 80px; height: 80px; margin: 0 auto 8px; position: relative; }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring .score-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 700; }
+    .score-label { font-size: 12px; color: var(--muted); }
+
+    /* ── Checks ── */
+    .check-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .check-item:last-child { border-bottom: none; }
+    .check-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green  { background: var(--green); }
+    .dot-red    { background: var(--red); }
+    .dot-yellow { background: var(--yellow); }
+    .check-name { flex: 1; }
+    .check-status { font-size: 11px; font-weight: 600; }
+    .status-ok   { color: var(--green); }
+    .status-fail { color: var(--red); }
+    .status-warn { color: var(--yellow); }
+
+    /* ── Tabellen ── */
+    .table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .table th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    .table td { padding: 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .table tr:last-child td { border-bottom: none; }
+    .table tr:hover td { background: var(--surface2); }
+
+    /* ── Badges ── */
+    .sev { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .sev-critical { background: #3d1e1e; color: var(--red); }
+    .sev-high     { background: #2d1f0e; color: var(--orange); }
+    .sev-medium   { background: #2d2408; color: var(--yellow); }
+    .sev-low      { background: #1a2d1a; color: var(--green); }
+    .sev-open     { background: #1a2233; color: var(--blue); }
+    .sev-resolved { background: #1a2d1a; color: var(--green); }
+
+    /* ── Audit-Log ── */
+    .log-entry { font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; padding: 4px 0; border-bottom: 1px solid rgba(48,54,61,.5); display: flex; gap: 12px; }
+    .log-ts    { color: var(--muted); flex-shrink: 0; }
+    .log-level { font-weight: 600; width: 60px; flex-shrink: 0; }
+    .log-cat   { color: var(--blue); width: 90px; flex-shrink: 0; }
+    .log-text  { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .level-AUDIT    { color: var(--purple); }
+    .level-SECURITY { color: var(--red); }
+    .level-CRITICAL { color: var(--red); }
+    .level-WARN     { color: var(--yellow); }
+    .level-INFO     { color: var(--green); }
+
+    /* ── Buttons ── */
+    .btn { padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); color: var(--text); cursor: pointer; font-size: 13px; transition: background .15s; }
+    .btn:hover { background: #2d333b; }
+    .btn-danger { border-color: var(--red); color: var(--red); }
+    .btn-danger:hover { background: #2d1a1a; }
+    .btn-primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+    .btn-primary:hover { background: #388bfd; }
+
+    /* ── Progress Bars ── */
+    .progress { background: var(--surface2); border-radius: 4px; height: 8px; margin-top: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+
+    /* ── Retention ── */
+    .retention-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .retention-item:last-child { border-bottom: none; }
+    .ret-days { font-size: 12px; color: var(--muted); }
+
+    /* ── Section Header ── */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-header h2 { font-size: 16px; font-weight: 600; }
+
+    /* ── Alerts ── */
+    .alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .alert-warning { background: #2d2408; border: 1px solid var(--yellow); color: var(--yellow); }
+    .alert-error   { background: #2d1a1a; border: 1px solid var(--red); color: var(--red); }
+    .alert-success { background: #1a2d1a; border: 1px solid var(--green); color: var(--green); }
+
+    /* ── Tab Nav ── */
+    .tab-nav { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .tab-btn { padding: 8px 16px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--blue); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Spinner ── */
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ISO 27001 Controls ── */
+    .control-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .control-header { display: flex; align-items: center; gap: 10px; }
+    .control-id { font-size: 11px; font-weight: 700; color: var(--blue); min-width: 60px; }
+    .control-name { font-weight: 500; }
+    .control-status { margin-left: auto; }
+    .control-desc { font-size: 12px; color: var(--muted); margin-top: 4px; padding-left: 70px; }
+
+    /* ── Footer ── */
+    .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px; border-top: 1px solid var(--border); margin-top: 32px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:22px">🛡️</span>
+  <h1>GhostVenumAI — Enterprise Compliance Dashboard</h1>
+  <span class="badge">ISO 27001 · DSGVO · BSI</span>
+  <span id="last-updated" style="margin-left:auto;color:var(--muted);font-size:12px"></span>
+</div>
+
+<div class="container">
+
+  <!-- ── Alerts ── -->
+  <div id="alerts-container"></div>
+
+  <!-- ── Tab Navigation ── -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('overview')">Übersicht</button>
+    <button class="tab-btn" onclick="showTab('iso27001')">ISO 27001</button>
+    <button class="tab-btn" onclick="showTab('dsgvo')">DSGVO</button>
+    <button class="tab-btn" onclick="showTab('bsi')">BSI IT-Grundschutz</button>
+    <button class="tab-btn" onclick="showTab('incidents')">Vorfälle</button>
+    <button class="tab-btn" onclick="showTab('audit')">Audit-Log</button>
+  </div>
+
+  <!-- ════════════════════════════════ ÜBERSICHT ══════════════════════════════ -->
+  <div id="tab-overview" class="tab-content active">
+    <div class="grid-3" style="margin-bottom:20px">
+
+      <!-- ISO Score -->
+      <div class="card">
+        <h2>ISO 27001</h2>
+        <div class="score-widget">
+          <div class="score-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--surface2)" stroke-width="8"/>
+              <circle id="iso-ring" cx="40" cy="40" r="32" fill="none" stroke="var(--blue)" stroke-width="8"
+                      stroke-dasharray="0 201" stroke-linecap="round"/>
+            </svg>
+            <div class="score-text" id="iso-score-pct">–</div>
+          </div>
+          <div class="score-label" id="iso-score-label">Wird geladen...</div>
+        </div>
+      </div>
+
+      <!-- DSGVO Score -->
+      <div class="card">
+        <h2>DSGVO / GDPR</h2>
+        <div class="score-widget">
+          <div class="score-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--surface2)" stroke-width="8"/>
+              <circle id="dsgvo-ring" cx="40" cy="40" r="32" fill="none" stroke="var(--green)" stroke-width="8"
+                      stroke-dasharray="0 201" stroke-linecap="round"/>
+            </svg>
+            <div class="score-text" id="dsgvo-score-pct">–</div>
+          </div>
+          <div class="score-label" id="dsgvo-score-label">Wird geladen...</div>
+        </div>
+      </div>
+
+      <!-- BSI Score -->
+      <div class="card">
+        <h2>BSI IT-Grundschutz</h2>
+        <div class="score-widget">
+          <div class="score-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--surface2)" stroke-width="8"/>
+              <circle id="bsi-ring" cx="40" cy="40" r="32" fill="none" stroke="var(--orange)" stroke-width="8"
+                      stroke-dasharray="0 201" stroke-linecap="round"/>
+            </svg>
+            <div class="score-text" id="bsi-score-pct">–</div>
+          </div>
+          <div class="score-label" id="bsi-score-label">Wird geladen...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Kritische Vorfälle -->
+      <div class="card" id="incidents-card">
+        <h2>Offene Vorfälle</h2>
+        <div id="incidents-overview">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <!-- Vault & Schlüssel -->
+      <div class="card">
+        <h2>Sicherheitsstatus</h2>
+        <div id="security-status">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ ISO 27001 ═══════════════════════════════ -->
+  <div id="tab-iso27001" class="tab-content">
+    <div class="card">
+      <div class="section-header">
+        <h2>ISO 27001:2022 — Kontrollbereiche</h2>
+        <button class="btn" onclick="loadISO()">&#8635; Aktualisieren</button>
+      </div>
+      <div id="iso-controls"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ DSGVO ════════════════════════════════ -->
+  <div id="tab-dsgvo" class="tab-content">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-header">
+          <h2>DSGVO Compliance-Checks</h2>
+        </div>
+        <div id="dsgvo-checks"><div class="spinner"></div></div>
+      </div>
+
+      <div class="card">
+        <h2>Aufbewahrungsfristen</h2>
+        <div id="retention-info"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Aktionen (DSGVO-Rechte)</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn" onclick="dsgvoExport()">📦 Daten exportieren (Art. 20)</button>
+        <button class="btn" onclick="initVVT()">📋 VVT initialisieren (Art. 30)</button>
+        <button class="btn" onclick="runRetention()">🗑️ Aufbewahrung anwenden</button>
+        <button class="btn btn-danger" onclick="confirmDeleteAll()">⚠️ Alle Daten löschen (Art. 17)</button>
+      </div>
+      <div id="dsgvo-action-result" style="margin-top:12px;font-size:13px;color:var(--muted)"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════ BSI IT-GRUNDSCHUTZ ════════════════════════ -->
+  <div id="tab-bsi" class="tab-content">
+    <div class="card">
+      <div class="section-header">
+        <h2>BSI IT-Grundschutz — Bausteine</h2>
+        <a href="https://www.bsi.bund.de/IT-Grundschutz" target="_blank" rel="noopener"
+           style="font-size:12px;color:var(--blue);text-decoration:none">BSI Webseite ↗</a>
+      </div>
+      <div id="bsi-controls"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ VORFÄLLE ═════════════════════════════ -->
+  <div id="tab-incidents" class="tab-content">
+    <div class="card">
+      <div class="section-header">
+        <h2>Sicherheitsvorfälle</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="checkIntegrity()">🔍 Integrität prüfen</button>
+          <button class="btn" onclick="loadIncidents()">&#8635; Aktualisieren</button>
+        </div>
+      </div>
+      <div id="dsgvo-timers" style="margin-bottom:12px"></div>
+      <table class="table">
+        <thead><tr>
+          <th>ID</th><th>Typ</th><th>Schwere</th><th>Titel</th>
+          <th>Status</th><th>DSGVO</th><th>Erstellt</th>
+        </tr></thead>
+        <tbody id="incidents-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ AUDIT-LOG ══════════════════════════════ -->
+  <div id="tab-audit" class="tab-content">
+    <div class="card">
+      <div class="section-header">
+        <h2>Audit-Log <span id="audit-status" style="font-size:12px;color:var(--muted)"></span></h2>
+        <div style="display:flex;gap:8px">
+          <select id="audit-level-filter" class="btn" onchange="loadAuditLog()" style="background:var(--surface2)">
+            <option value="">Alle Level</option>
+            <option value="AUDIT">AUDIT</option>
+            <option value="SECURITY">SECURITY</option>
+            <option value="CRITICAL">CRITICAL</option>
+            <option value="WARN">WARN</option>
+            <option value="INFO">INFO</option>
+          </select>
+          <button class="btn" onclick="verifyAuditChain()">🔐 Kette prüfen</button>
+          <button class="btn" onclick="exportAuditLog()">📥 Exportieren</button>
+          <button class="btn" onclick="loadAuditLog()">&#8635; Aktualisieren</button>
+        </div>
+      </div>
+      <div id="audit-entries" style="font-family:monospace;max-height:500px;overflow-y:auto"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  GhostVenumAI Enterprise — Compliance Dashboard<br>
+  ISO 27001:2022 · DSGVO (EU) 2016/679 · BSI IT-Grundschutz
+</div>
+
+<script>
+// ── Tab Navigation ──────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name)?.classList.add('active');
+  event.target.classList.add('active');
+
+  if (name === 'audit')    loadAuditLog();
+  if (name === 'incidents') loadIncidents();
+  if (name === 'iso27001') loadISO();
+  if (name === 'dsgvo')    loadDSGVO();
+  if (name === 'bsi')      loadBSI();
+}
+
+// ── SVG Ring Update ─────────────────────────────────────────────────────────
+function setRing(id, pct, color) {
+  const circumference = 2 * Math.PI * 32; // r=32
+  const ring = document.getElementById(id);
+  if (!ring) return;
+  const dash = (pct / 100) * circumference;
+  ring.style.strokeDasharray = `${dash} ${circumference}`;
+  ring.style.stroke = color || (pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)');
+}
+
+// ── Overview ────────────────────────────────────────────────────────────────
+async function loadOverview() {
+  document.getElementById('last-updated').textContent =
+    'Aktualisiert: ' + new Date().toLocaleTimeString('de-DE');
+
+  // Compliance Status
+  const r = await fetch('/api/compliance/status').catch(() => null);
+  if (!r?.ok) return;
+  const data = await r.json();
+
+  // ISO Score
+  const iso = data.iso27001 || {};
+  const isoPct = iso.percentage || 0;
+  document.getElementById('iso-score-pct').textContent = isoPct + '%';
+  document.getElementById('iso-score-label').textContent = iso.score || '-';
+  setRing('iso-ring', isoPct);
+
+  // DSGVO Score
+  const dsgvo = data.dsgvo || {};
+  const dsgvoPct = dsgvo.percentage || 0;
+  document.getElementById('dsgvo-score-pct').textContent = dsgvoPct + '%';
+  document.getElementById('dsgvo-score-label').textContent = dsgvo.score || '-';
+  setRing('dsgvo-ring', dsgvoPct);
+
+  // BSI Score
+  const bsi = data.bsi || {};
+  const bsiPct = bsi.percentage || 0;
+  document.getElementById('bsi-score-pct').textContent = bsiPct + '%';
+  document.getElementById('bsi-score-label').textContent = bsi.score || '-';
+  setRing('bsi-ring', bsiPct);
+
+  // Incidents
+  const inc = data.incidents || {};
+  const incEl = document.getElementById('incidents-overview');
+  incEl.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center">
+      <div><div style="font-size:28px;font-weight:700;color:var(--red)">${inc.critical||0}</div>
+           <div style="color:var(--muted);font-size:12px">Kritisch</div></div>
+      <div><div style="font-size:28px;font-weight:700;color:var(--yellow)">${inc.open||0}</div>
+           <div style="color:var(--muted);font-size:12px">Offen</div></div>
+      <div><div style="font-size:28px;font-weight:700;color:var(--orange)">${inc.dsgvo_pending||0}</div>
+           <div style="color:var(--muted);font-size:12px">DSGVO-Frist</div></div>
+      <div><div style="font-size:28px;font-weight:700;color:var(--green)">${inc.resolved||0}</div>
+           <div style="color:var(--muted);font-size:12px">Behoben</div></div>
+    </div>`;
+
+  if ((inc.dsgvo_overdue||[]).length > 0) {
+    showAlert('error', `⛔ DSGVO Art. 33: ${inc.dsgvo_overdue.length} Meldepflicht(en) überfällig!`);
+  }
+
+  // Security Status
+  const vault = data.vault || {};
+  const secEl = document.getElementById('security-status');
+  secEl.innerHTML = buildChecks([
+    { label: 'Verschlüsselter Key-Vault', ok: vault.vault_exists },
+    { label: 'Vault geladen', ok: vault.cache_loaded },
+    { label: 'Anthropic-Key konfiguriert', ok: vault.env_anthropic },
+    { label: 'Audit-Log aktiv', ok: data.audit_active },
+    { label: 'DSGVO-VVT vorhanden', ok: dsgvo.checks?.vvt_exists },
+    { label: 'Aufbewahrung konfiguriert', ok: dsgvo.checks?.retention_configured },
+  ]);
+}
+
+// ── ISO 27001 ────────────────────────────────────────────────────────────────
+async function loadISO() {
+  const r = await fetch('/api/compliance/iso27001').catch(() => null);
+  if (!r?.ok) { document.getElementById('iso-controls').innerHTML = '<span style="color:var(--muted)">Fehler beim Laden</span>'; return; }
+  const data = await r.json();
+
+  let html = '';
+  for (const [domain, controls] of Object.entries(data.controls || {})) {
+    html += `<div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:.6px;padding:8px 0;border-bottom:2px solid var(--border)">
+        ${domain}
+      </div>`;
+    for (const ctrl of controls) {
+      const ok    = ctrl.implemented;
+      const color = ok ? 'var(--green)' : ctrl.partial ? 'var(--yellow)' : 'var(--red)';
+      const label = ok ? 'Implementiert' : ctrl.partial ? 'Teilweise' : 'Ausstehend';
+      html += `
+      <div class="control-item">
+        <div class="control-header">
+          <span class="control-id">${ctrl.id}</span>
+          <span class="control-name">${ctrl.name}</span>
+          <span class="control-status" style="font-size:11px;font-weight:600;color:${color}">${label}</span>
+        </div>
+        <div class="control-desc">${ctrl.description}</div>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById('iso-controls').innerHTML = html || '<span style="color:var(--muted)">Keine Daten</span>';
+}
+
+// ── DSGVO ────────────────────────────────────────────────────────────────────
+async function loadDSGVO() {
+  const r = await fetch('/api/compliance/dsgvo').catch(() => null);
+  if (!r?.ok) return;
+  const data = await r.json();
+
+  // Checks
+  const checks = data.checks || {};
+  const checksHTML = buildChecks([
+    { label: 'VVT (Art. 30) vorhanden',     ok: checks.vvt_exists },
+    { label: 'Aufbewahrungsfristen gesetzt', ok: checks.retention_configured },
+    { label: 'Verschlüsselter Key-Vault',   ok: checks.vault_enabled },
+    { label: 'Audit-Logging aktiv',          ok: checks.audit_logging },
+    { label: 'Einwilligungstracking',        ok: checks.consent_tracking },
+    { label: 'DSFA abgeschlossen',           ok: checks.dsfa_completed },
+  ]);
+  document.getElementById('dsgvo-checks').innerHTML = checksHTML;
+
+  // Aufbewahrungsfristen
+  const retention = data.retention || {};
+  let retHTML = '';
+  for (const [type, days] of Object.entries(retention)) {
+    const label = {
+      scan_history: 'Scan-Verlauf', pdf_reports: 'PDF-Reports',
+      auth_logs: 'Auth-Logs', audit_log: 'Audit-Log',
+      incident_reports: 'Vorfallsberichte', gpt_analyses: 'KI-Analysen',
+    }[type] || type;
+    const pct = Math.min(100, (days / 730) * 100);
+    const color = days <= 30 ? 'var(--green)' : days <= 90 ? 'var(--blue)' : days <= 365 ? 'var(--yellow)' : 'var(--orange)';
+    retHTML += `
+      <div class="retention-item">
+        <span>${label}</span>
+        <span class="ret-days">${days} Tage</span>
+      </div>`;
+  }
+  document.getElementById('retention-info').innerHTML = retHTML ||
+    '<span style="color:var(--muted)">Standard-Fristen aktiv</span>';
+}
+
+// ── BSI ───────────────────────────────────────────────────────────────────────
+async function loadBSI() {
+  const r = await fetch('/api/compliance/bsi').catch(() => null);
+  if (!r?.ok) return;
+  const data = await r.json();
+
+  let html = '';
+  for (const baustein of (data.bausteine || [])) {
+    const ok    = baustein.implemented;
+    const color = ok ? 'var(--green)' : 'var(--yellow)';
+    const icon  = ok ? '✓' : '○';
+    html += `
+      <div class="control-item">
+        <div class="control-header">
+          <span class="control-id" style="color:var(--orange)">${baustein.id}</span>
+          <span class="control-name">${baustein.name}</span>
+          <span style="font-size:11px;font-weight:600;color:${color}">${icon} ${baustein.status}</span>
+        </div>
+        <div class="control-desc">${baustein.description}</div>
+      </div>`;
+  }
+  document.getElementById('bsi-controls').innerHTML = html || '<span style="color:var(--muted)">Keine Daten</span>';
+}
+
+// ── Vorfälle ─────────────────────────────────────────────────────────────────
+async function loadIncidents() {
+  const r = await fetch('/api/compliance/incidents').catch(() => null);
+  if (!r?.ok) return;
+  const data = await r.json();
+
+  // DSGVO Timer
+  const timersEl = document.getElementById('dsgvo-timers');
+  const overdue  = data.summary?.dsgvo_overdue || [];
+  if (overdue.length > 0) {
+    timersEl.innerHTML = overdue.map(i =>
+      `<div class="alert alert-error">⛔ DSGVO Art.33 ÜBERFÄLLIG: ${i.id} — ${i.title} (${i.hours_overdue}h)</div>`
+    ).join('');
+  } else {
+    timersEl.innerHTML = '';
+  }
+
+  const tbody = document.getElementById('incidents-table');
+  tbody.innerHTML = (data.incidents || []).map(inc => {
+    const dsgvoMark = inc.dsgvo_art33
+      ? `<span class="sev sev-high">Art.33${inc.dsgvo_notified ? ' ✓' : ' ⚠️'}</span>`
+      : '–';
+    return `<tr>
+      <td style="font-family:monospace;font-size:12px">${inc.id}</td>
+      <td>${inc.type}</td>
+      <td><span class="sev sev-${inc.severity}">${inc.severity}</span></td>
+      <td>${inc.title}</td>
+      <td><span class="sev sev-${inc.status}">${inc.status}</span></td>
+      <td>${dsgvoMark}</td>
+      <td style="color:var(--muted);font-size:12px">${inc.created_at?.substring(0,16)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Keine Vorfälle</td></tr>';
+}
+
+// ── Audit-Log ─────────────────────────────────────────────────────────────────
+async function loadAuditLog() {
+  const level  = document.getElementById('audit-level-filter').value;
+  const params = level ? `?level=${level}` : '';
+  const r      = await fetch('/api/compliance/audit' + params).catch(() => null);
+  if (!r?.ok) return;
+  const data   = await r.json();
+
+  document.getElementById('audit-status').textContent =
+    `(${data.entries?.length || 0} Einträge)`;
+
+  const el = document.getElementById('audit-entries');
+  el.innerHTML = (data.entries || []).reverse().map(e => `
+    <div class="log-entry">
+      <span class="log-ts">${e.timestamp?.substring(11,19)||''}</span>
+      <span class="log-level level-${e.level}">${e.level}</span>
+      <span class="log-cat">${e.category}</span>
+      <span class="log-text">${e.action} — ${e.result||''} ${e.user ? '['+ e.user +']' : ''}</span>
+    </div>`).join('') || '<div style="color:var(--muted);padding:16px">Keine Einträge</div>';
+}
+
+async function verifyAuditChain() {
+  const r = await fetch('/api/compliance/audit/verify').catch(() => null);
+  if (!r?.ok) return;
+  const data = await r.json();
+  if (data.valid) {
+    showAlert('success', `✅ Audit-Kette verifiziert — ${data.entries} Einträge integer`);
+  } else {
+    showAlert('error', `⛔ Audit-Kette KOMPROMITTIERT — ${data.errors?.length} Fehler!`);
+  }
+}
+
+async function exportAuditLog() {
+  const r = await fetch('/api/compliance/audit/export', {method:'POST'}).catch(() => null);
+  if (!r?.ok) return;
+  const data = await r.json();
+  showAlert('success', `📥 ${data.count} Einträge exportiert: ${data.path}`);
+}
+
+// ── DSGVO Aktionen ─────────────────────────────────────────────────────────────
+async function dsgvoExport() {
+  const r = await fetch('/api/compliance/dsgvo/export', {method:'POST'}).catch(() => null);
+  if (r?.ok) {
+    const d = await r.json();
+    document.getElementById('dsgvo-action-result').textContent =
+      `✅ Export: ${d.scan_count} Scans, ${d.report_count} Reports → ${d.output_path}`;
+  }
+}
+
+async function initVVT() {
+  const r = await fetch('/api/compliance/dsgvo/init-vvt', {method:'POST'}).catch(() => null);
+  if (r?.ok) {
+    document.getElementById('dsgvo-action-result').textContent =
+      '✅ VVT initialisiert. Bitte Verantwortlichen-Daten eintragen.';
+    loadDSGVO();
+  }
+}
+
+async function runRetention() {
+  if (!confirm('Aufbewahrungsrichtlinie ausführen und abgelaufene Dateien löschen?')) return;
+  const r = await fetch('/api/compliance/dsgvo/retention', {method:'POST'}).catch(() => null);
+  if (r?.ok) {
+    const d = await r.json();
+    document.getElementById('dsgvo-action-result').textContent =
+      `✅ Gelöscht: ${d.deleted} Dateien, Behalten: ${d.kept}`;
+  }
+}
+
+async function confirmDeleteAll() {
+  const code = prompt('DSGVO Art. 17 — Alle Scan-Daten löschen?\nBestätigen mit "LOESCHEN":');
+  if (code !== 'LOESCHEN') return;
+  const r = await fetch('/api/compliance/dsgvo/delete-all', {method:'POST'}).catch(() => null);
+  if (r?.ok) {
+    const d = await r.json();
+    showAlert('success', `✅ ${d.deleted_count} Dateien gelöscht (DSGVO Art. 17)`);
+  }
+}
+
+async function checkIntegrity() {
+  const r = await fetch('/api/compliance/incidents/check-integrity', {method:'POST'}).catch(() => null);
+  if (r?.ok) {
+    const d = await r.json();
+    if (d.incident_id) {
+      showAlert('error', `⚠️ Manipulationsvorfall erstellt: ${d.incident_id}`);
+    } else {
+      showAlert('success', '✅ Audit-Log-Integrität OK');
+    }
+    loadIncidents();
+  }
+}
+
+// ── Hilfs-Render ─────────────────────────────────────────────────────────────
+function buildChecks(items) {
+  return items.map(({label, ok, warn}) => {
+    const cls    = ok ? 'dot-green' : warn ? 'dot-yellow' : 'dot-red';
+    const status = ok ? 'OK' : warn ? 'Teilweise' : 'Fehlt';
+    const scls   = ok ? 'status-ok' : warn ? 'status-warn' : 'status-fail';
+    return `<div class="check-item">
+      <div class="check-dot ${cls}"></div>
+      <span class="check-name">${label}</span>
+      <span class="check-status ${scls}">${status}</span>
+    </div>`;
+  }).join('');
+}
+
+function showAlert(type, message) {
+  const container = document.getElementById('alerts-container');
+  const el        = document.createElement('div');
+  el.className    = `alert alert-${type}`;
+  el.innerHTML    = message;
+  container.prepend(el);
+  setTimeout(() => el.remove(), 8000);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadOverview();
+setInterval(loadOverview, 30000);
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![GhostVenumAI Banner](screenshots/agent-mode-done.png)
+![GhostVenumAI Banner](screenshots/classic-scan-enterprise.png)
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Claude](https://img.shields.io/badge/Claude-Anthropic-7C3AED?style=for-the-badge&logo=anthropic&logoColor=white)](https://anthropic.com)

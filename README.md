@@ -192,11 +192,24 @@ cp config.example.json config.json
 # Edit config.json and add your API keys
 ```
 
+### Create the first admin (required)
+
+The Web API is **fully locked behind RBAC** — every sensitive route requires a
+valid session with the matching permission. On first run, create an admin:
+
+```bash
+python3 -m modules.rbac init-admin
+# or: python3 -m modules.rbac create-user <name> <role>
+```
+
+Without a user, the API returns `401` on every protected endpoint and the Web UI
+shows a login overlay.
+
 ### Run — Web GUI
 
 ```bash
 python3 main.py
-# Opens browser at http://localhost:5000
+# Opens browser at http://localhost:5000  → log in with your admin account
 ```
 
 ### Run — CLI Agent Mode

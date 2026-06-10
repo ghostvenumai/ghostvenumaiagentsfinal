@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Lint (echte Fehler — Syntax, undefinierte Namen)
+        run: ruff check --select E9,F63,F7,F82 .
+
+      - name: Run tests
+        run: |
+          set +e
+          python -m pytest -q
+          code=$?
+          # Exit-Code 5 = pytest hat keine Tests gefunden → kein Fehler
+          if [ "$code" -eq 5 ]; then
+            echo "::warning::Keine Tests gefunden — überspringe (erwartet, bis Test-PRs gemergt sind)."
+            exit 0
+          fi
+          exit $code

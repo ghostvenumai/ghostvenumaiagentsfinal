@@ -1,0 +1,5 @@
+# Entwicklungs- und CI-Abhängigkeiten (nicht für den Produktivbetrieb nötig)
+-r requirements.txt
+
+pytest>=8.0.0
+ruff>=0.6.0

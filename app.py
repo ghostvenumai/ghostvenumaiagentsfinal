@@ -5,6 +5,7 @@ import json
 import queue
 import threading
 import subprocess
+from functools import wraps
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
@@ -47,13 +48,122 @@ def save_config(data: dict):
     except Exception as e:
         print(f"Config-Fehler: {e}")
 
+# ── Authentifizierung & Autorisierung (RBAC) ───────────────────────────────────
+# Bindet das vorhandene RBAC-System (modules/rbac.py) an die Web-API.
+# Jede zustandsändernde oder sensible Route erfordert eine gültige Session mit
+# passender Berechtigung. ISO 27001 A.9.4.1 | BSI APP.3.1.A1
+
+def _extract_token() -> str:
+    """Liest das Session-Token aus Header, Authorization-Bearer oder Query-Param.
+    Der Query-Param wird für SSE-Routen benötigt, da EventSource im Browser
+    keine eigenen HTTP-Header setzen kann."""
+    token = request.headers.get("X-Session-Token", "")
+    if not token:
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            token = auth[7:]
+    if not token:
+        token = request.args.get("token", "")
+    return token.strip()
+
+
+def require_auth(permission: str):
+    """Decorator: erzwingt gültige Session + Berechtigung für eine Route.
+
+    401 → nicht authentifiziert / Session abgelaufen
+    403 → authentifiziert, aber Berechtigung fehlt
+    503 → RBAC-Modul nicht verfügbar (sicherer Default: Zugriff verweigert)
+    """
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            try:
+                from modules.rbac import require_permission
+            except ImportError:
+                return jsonify({"error": "RBAC-Modul nicht verfügbar — Zugriff verweigert."}), 503
+            try:
+                session = require_permission(_extract_token(), permission)
+            except PermissionError as e:
+                code = 401 if "authentifiziert" in str(e).lower() else 403
+                return jsonify({"error": str(e)}), code
+            # Authentifizierten Benutzer für Audit-Logs verfügbar machen
+            request.gva_user = session.get("username", "unknown")
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def _current_user() -> str:
+    """Authentifizierter Benutzer der aktuellen Anfrage (für Audit-Logs)."""
+    return getattr(request, "gva_user", "web_api")
+
+
 # ── Routen ─────────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
+# ── Login / Session ─────────────────────────────────────────────────────────────
+
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    data     = request.get_json(force=True) or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+    totp     = data.get("totp_code", "").strip()
+
+    if not username or not password:
+        return jsonify({"error": "Benutzername und Passwort erforderlich."}), 400
+
+    try:
+        from modules.rbac import authenticate, get_session
+    except ImportError:
+        return jsonify({"error": "RBAC-Modul nicht verfügbar."}), 503
+
+    token = authenticate(username, password, totp_code=totp,
+                         source_ip=request.remote_addr or "127.0.0.1")
+    if not token:
+        # Bewusst generische Fehlermeldung (keine User-Enumeration)
+        return jsonify({"error": "Anmeldung fehlgeschlagen."}), 401
+
+    session = get_session(token) or {}
+    return jsonify({
+        "token":      token,
+        "username":   username,
+        "role":       session.get("role", ""),
+        "expires_in": 3600,
+    })
+
+
+@app.route("/api/logout", methods=["POST"])
+def api_logout():
+    try:
+        from modules.rbac import logout
+        logout(_extract_token())
+    except ImportError:
+        pass
+    return jsonify({"ok": True})
+
+
+@app.route("/api/whoami")
+def api_whoami():
+    try:
+        from modules.rbac import get_session
+    except ImportError:
+        return jsonify({"authenticated": False}), 503
+    session = get_session(_extract_token())
+    if not session:
+        return jsonify({"authenticated": False}), 401
+    return jsonify({
+        "authenticated": True,
+        "username":      session.get("username", ""),
+        "role":          session.get("role", ""),
+    })
+
 @app.route("/api/config", methods=["GET"])
+@require_auth("config:read")
 def get_config():
     cfg = load_config()
     # API-Keys NICHT zurückgeben (nur ob vorhanden)
@@ -63,6 +173,7 @@ def get_config():
     return jsonify(safe)
 
 @app.route("/api/config", methods=["POST"])
+@require_auth("config:write")
 def update_config():
     data    = request.get_json(force=True)
     cfg     = load_config()
@@ -80,13 +191,14 @@ def update_config():
         from modules.audit_logger import log_config_change
         for field in changed:
             safe_val = "***" if "key" in field else data[field]
-            log_config_change(field, user="web_api", new_value=safe_val)
+            log_config_change(field, user=_current_user(), new_value=safe_val)
     except Exception:
         pass
 
     return jsonify({"ok": True})
 
 @app.route("/api/sysinfo", methods=["GET"])
+@require_auth("config:read")
 def sysinfo():
     from modules.system_info import collect_system_info
     return jsonify(collect_system_info())
@@ -94,6 +206,7 @@ def sysinfo():
 # ── Classic Scan ───────────────────────────────────────────────────────────────
 
 @app.route("/api/scan", methods=["POST"])
+@require_auth("scan:run")
 def api_scan():
     data   = request.get_json(force=True)
     target = data.get("target", "").strip()
@@ -117,7 +230,7 @@ def api_scan():
     # Audit-Log
     try:
         from modules.audit_logger import log_scan
-        log_scan(target, user="web_api", scan_args=args)
+        log_scan(target, user=_current_user(), scan_args=args)
     except Exception:
         pass
 
@@ -150,6 +263,7 @@ def api_scan():
     return jsonify({"output": output, "scan_id": scan_id})
 
 @app.route("/api/gpt", methods=["POST"])
+@require_auth("report:create")
 def api_gpt():
     data      = request.get_json(force=True)
     scan_out  = data.get("scan_output", "").strip()
@@ -168,6 +282,7 @@ def api_gpt():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/report", methods=["POST"])
+@require_auth("report:create")
 def api_report():
     data     = request.get_json(force=True)
     scan_out = data.get("scan_output", "")
@@ -186,6 +301,7 @@ def api_report():
 # ── Agent Mode — Server-Sent Events (SSE) ─────────────────────────────────────
 
 @app.route("/api/agents/stream")
+@require_auth("scan:run")
 def api_agents_stream():
     target = request.args.get("target", "").strip()
     if not target:
@@ -231,6 +347,7 @@ def api_agents_stream():
 # ── History / Memory API ───────────────────────────────────────────────────────
 
 @app.route("/api/history/<target>")
+@require_auth("history:view")
 def api_history(target):
     """Gibt alle Scans für ein Target zurück (ohne raw_-Felder)."""
     try:
@@ -250,6 +367,7 @@ def api_history(target):
 
 
 @app.route("/api/history/<target>/<scan_id>")
+@require_auth("history:view")
 def api_history_detail(target, scan_id):
     """Gibt den vollständigen Scan-Datensatz für eine scan_id zurück."""
     try:
@@ -264,6 +382,7 @@ def api_history_detail(target, scan_id):
 
 
 @app.route("/api/diff/<target>")
+@require_auth("history:view")
 def api_diff(target):
     """Vergleicht die letzten zwei Scans für ein Target."""
     try:
@@ -280,6 +399,7 @@ def api_diff(target):
 
 
 @app.route("/api/targets")
+@require_auth("history:view")
 def api_targets():
     """Gibt alle Targets zurück, für die History-Daten existieren."""
     try:
@@ -294,6 +414,7 @@ def api_targets():
 _monitor_engine = None
 
 @app.route("/api/monitor/start", methods=["POST"])
+@require_auth("monitor:start")
 def api_monitor_start():
     global _monitor_engine
     from modules.monitor import MonitorEngine
@@ -353,6 +474,7 @@ def api_monitor_start():
 
 
 @app.route("/api/monitor/stop", methods=["POST"])
+@require_auth("monitor:stop")
 def api_monitor_stop():
     global _monitor_engine
     if _monitor_engine:
@@ -361,6 +483,7 @@ def api_monitor_stop():
 
 
 @app.route("/api/monitor/status")
+@require_auth("monitor:view")
 def api_monitor_status():
     global _monitor_engine
     if not _monitor_engine:
@@ -378,6 +501,7 @@ def compliance_dashboard():
 # ── Benutzerverwaltung API ─────────────────────────────────────────────────────
 
 @app.route("/api/users", methods=["GET"])
+@require_auth("users:manage")
 def api_users_list():
     try:
         from modules.rbac import list_users
@@ -387,6 +511,7 @@ def api_users_list():
 
 
 @app.route("/api/users", methods=["POST"])
+@require_auth("users:manage")
 def api_users_create():
     data = request.get_json(force=True) or {}
     username = data.get("username", "").strip()
@@ -400,7 +525,7 @@ def api_users_create():
 
     try:
         from modules.rbac import create_user
-        result = create_user(username, password, role, created_by="web_admin")
+        result = create_user(username, password, role, created_by=_current_user())
         return jsonify({"ok": True, "user": result})
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -409,10 +534,11 @@ def api_users_create():
 
 
 @app.route("/api/users/<username>", methods=["DELETE"])
+@require_auth("users:manage")
 def api_users_delete(username):
     try:
         from modules.rbac import delete_user
-        ok = delete_user(username, deleted_by="web_admin")
+        ok = delete_user(username, deleted_by=_current_user())
         if not ok:
             return jsonify({"error": "Benutzer nicht gefunden."}), 404
         return jsonify({"ok": True})
@@ -421,6 +547,7 @@ def api_users_delete(username):
 
 
 @app.route("/api/users/<username>/role", methods=["PATCH"])
+@require_auth("users:manage")
 def api_users_role(username):
     data = request.get_json(force=True) or {}
     new_role = data.get("role", "").strip()
@@ -441,6 +568,7 @@ def api_users_role(username):
 
 
 @app.route("/api/users/totp/setup/<username>", methods=["POST"])
+@require_auth("users:manage")
 def api_totp_setup(username):
     try:
         from modules.rbac import setup_totp
@@ -455,6 +583,7 @@ def api_totp_setup(username):
 # ── Alert / SMTP API ───────────────────────────────────────────────────────────
 
 @app.route("/api/alerts/test", methods=["POST"])
+@require_auth("config:write")
 def api_alert_test():
     try:
         from modules.alerting import smtp_test
@@ -464,6 +593,7 @@ def api_alert_test():
 
 
 @app.route("/api/backup/create", methods=["POST"])
+@require_auth("config:write")
 def api_backup_create():
     from modules.backup import create_backup
     data  = request.get_json(force=True) or {}
@@ -472,24 +602,28 @@ def api_backup_create():
 
 
 @app.route("/api/backup/list")
+@require_auth("config:read")
 def api_backup_list():
     from modules.backup import list_backups
     return jsonify({"backups": list_backups()})
 
 
 @app.route("/api/backup/verify/<filename>")
+@require_auth("config:read")
 def api_backup_verify(filename):
     from modules.backup import verify_backup
     return jsonify(verify_backup(filename))
 
 
 @app.route("/api/backup/cleanup", methods=["POST"])
+@require_auth("config:write")
 def api_backup_cleanup():
     from modules.backup import cleanup_old_backups
     return jsonify(cleanup_old_backups())
 
 
 @app.route("/api/alerts/smtp", methods=["POST"])
+@require_auth("config:write")
 def api_alert_smtp_save():
     data = request.get_json(force=True) or {}
     cfg  = load_config()
@@ -513,9 +647,19 @@ if __name__ == "__main__":
     except Exception:
         pass
 
+    # Warnung, falls noch kein Benutzer existiert — die API ist sonst gesperrt
+    try:
+        from modules.rbac import _load_users
+        if not _load_users():
+            print("\n[!] Kein Benutzer angelegt — die Web-API ist vollständig gesperrt.")
+            print("    Admin anlegen mit:  python -m modules.rbac init-admin")
+    except Exception:
+        pass
+
     print("\n👻 GhostVenumAI v2.0 — Enterprise Edition")
     print("🌐 Web-GUI:         http://localhost:5000")
     print("🛡️  Compliance:     http://localhost:5000/compliance")
+    print("🔐 Login:           POST /api/login  (Session via RBAC)")
     print("─" * 50)
     print("  ISO 27001 | DSGVO | BSI IT-Grundschutz")
     print("─" * 50)

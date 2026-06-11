@@ -219,6 +219,69 @@ def migrate_from_config(config_path: str = "config.json") -> bool:
     return True
 
 
+# ── Laufzeit-Secret-API (Web-App) ──────────────────────────────────────────────
+# Liest/schreibt Secrets über das VAULT_PASSWORD aus der Umgebung, damit die
+# Web-API keine Klartext-Secrets (SMTP-Passwort, API-Keys) mehr in config.json
+# ablegen muss. ISO 27001 A.10 (Kryptographie) | BSI CON.1
+
+def vault_password() -> Optional[str]:
+    """Vault-Passwort aus der Umgebung (VAULT_PASSWORD / GVA_VAULT_PASSWORD)."""
+    return os.environ.get("VAULT_PASSWORD") or os.environ.get("GVA_VAULT_PASSWORD")
+
+
+def vault_available() -> bool:
+    """True, wenn ein Vault-Passwort gesetzt ist — Secrets können dann ver- und
+    entschlüsselt werden (Vault wird bei Bedarf automatisch angelegt)."""
+    return bool(vault_password())
+
+
+def store_secret(name: str, value: str) -> None:
+    """Speichert ein Secret verschlüsselt im Vault (anlegen oder aktualisieren).
+
+    Aktualisiert zusätzlich Laufzeit-Cache und Umgebungsvariable, sodass das
+    Secret ohne Neustart sofort nutzbar ist. Erfordert ein gesetztes
+    VAULT_PASSWORD — sonst RuntimeError.
+    """
+    global _vault_cache
+    pw = vault_password()
+    if not pw:
+        raise RuntimeError(
+            "Kein VAULT_PASSWORD gesetzt — Secret kann nicht verschlüsselt gespeichert werden."
+        )
+
+    if os.path.exists(VAULT_PATH) and os.path.exists(VAULT_META):
+        update_vault(pw, {name: value})
+    else:
+        create_vault(pw, {name: value})
+
+    if _vault_cache is None:
+        _vault_cache = {}
+    _vault_cache[name] = value
+    os.environ[name] = value
+
+
+def get_secret(name: str, default: Optional[str] = None) -> Optional[str]:
+    """Liest ein Secret: Umgebung → Cache → (Vault bei gesetztem Passwort) → default."""
+    global _vault_cache
+    val = os.environ.get(name)
+    if val:
+        return val
+    if _vault_cache and name in _vault_cache:
+        return _vault_cache[name]
+
+    pw = vault_password()
+    if pw and os.path.exists(VAULT_PATH) and os.path.exists(VAULT_META):
+        try:
+            keys = open_vault(pw)
+            _vault_cache = keys
+            if name in keys:
+                os.environ.setdefault(name, keys[name])
+                return keys[name]
+        except Exception:
+            pass
+    return default
+
+
 # ── Vault-Status ───────────────────────────────────────────────────────────────
 
 def vault_status() -> Dict[str, Any]:

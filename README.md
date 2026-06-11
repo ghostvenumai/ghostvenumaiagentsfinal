@@ -289,12 +289,21 @@ OrchestratorAgent
 
 ### Encrypted API Key Vault
 
-API keys are never stored in plaintext. The vault uses AES-256-GCM with PBKDF2-HMAC-SHA256 (600,000 iterations, NIST 2024):
+Secrets (API keys **and** the SMTP password) are never stored in plaintext. The vault uses AES-256-GCM with PBKDF2-HMAC-SHA256 (600,000 iterations, NIST 2024):
 
 ```bash
-# Keys are stored in config.vault (encrypted)
-# Master password is required to unlock at runtime
+# Unlock the vault at runtime by providing the master password as an env var.
+# When VAULT_PASSWORD is set, the web UI writes any secret you enter
+# (API keys, SMTP password) straight into config.vault — never into config.json.
+export VAULT_PASSWORD='your-master-password'
+python3 main.py
+
+# Migrate existing plaintext keys from config.json into the vault:
+python3 -m modules.key_manager migrate
 ```
+
+> ⚠️ If `VAULT_PASSWORD` is **not** set, the app prints a warning and falls back to
+> storing secrets in `config.json` (legacy behavior). Set it to keep secrets encrypted.
 
 ### HMAC Audit Log
 

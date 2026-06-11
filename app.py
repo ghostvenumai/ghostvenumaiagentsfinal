@@ -98,6 +98,25 @@ def _current_user() -> str:
     return getattr(request, "gva_user", "web_api")
 
 
+# ── Verschlüsselter Secret-Speicher (Vault) ────────────────────────────────────
+# Secrets (API-Keys, SMTP-Passwort) gehören NICHT im Klartext in config.json,
+# sondern in den AES-256-GCM-Vault (modules/key_manager.py). ISO 27001 A.10
+
+# config.json-Feld → Vault-/Env-Name für secret-pflichtige Felder
+SECRET_FIELDS = {
+    "openai_key":    "OPENAI_API_KEY",
+    "anthropic_key": "ANTHROPIC_API_KEY",
+}
+
+def _vault():
+    """Gibt das key_manager-Modul zurück, wenn ein entsperrter Vault nutzbar ist
+    (VAULT_PASSWORD gesetzt + pycryptodome verfügbar), sonst None."""
+    try:
+        from modules import key_manager
+    except Exception:
+        return None
+    return key_manager if key_manager.vault_available() else None
+
 # ── Routen ─────────────────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -166,10 +185,17 @@ def api_whoami():
 @require_auth("config:read")
 def get_config():
     cfg = load_config()
-    # API-Keys NICHT zurückgeben (nur ob vorhanden)
+    # API-Keys NICHT zurückgeben (nur ob vorhanden — auch aus dem Vault)
     safe = {k: v for k, v in cfg.items() if "key" not in k.lower()}
-    safe["has_openai_key"]    = bool(cfg.get("openai_key") or os.getenv("OPENAI_API_KEY"))
-    safe["has_anthropic_key"] = bool(cfg.get("anthropic_key") or os.getenv("ANTHROPIC_API_KEY"))
+    km = _vault()
+    has_openai    = bool(cfg.get("openai_key") or os.getenv("OPENAI_API_KEY"))
+    has_anthropic = bool(cfg.get("anthropic_key") or os.getenv("ANTHROPIC_API_KEY"))
+    if km:
+        has_openai    = has_openai    or bool(km.get_secret("OPENAI_API_KEY"))
+        has_anthropic = has_anthropic or bool(km.get_secret("ANTHROPIC_API_KEY"))
+    safe["has_openai_key"]    = has_openai
+    safe["has_anthropic_key"] = has_anthropic
+    safe["vault_unlocked"]    = km is not None
     return jsonify(safe)
 
 @app.route("/api/config", methods=["POST"])
@@ -178,11 +204,21 @@ def update_config():
     data    = request.get_json(force=True)
     cfg     = load_config()
     changed = []
+    km      = _vault()
     for key in ["target", "nmap_args", "language", "openai_model",
                 "claude_model", "openai_key", "anthropic_key"]:
-        if key in data and data[key] != "":
+        if key not in data or data[key] == "":
+            continue
+        if key in SECRET_FIELDS and km:
+            # API-Key verschlüsselt im Vault ablegen, niemals im Klartext in config.json
+            km.store_secret(SECRET_FIELDS[key], data[key])
+            cfg.pop(key, None)
+        else:
+            if key in SECRET_FIELDS:
+                print(f"[!] Kein Vault entsperrt — '{key}' wird im Klartext gespeichert. "
+                      f"Setze VAULT_PASSWORD für verschlüsselte Speicherung.")
             cfg[key] = data[key]
-            changed.append(key)
+        changed.append(key)
 
     save_config(cfg)
 
@@ -627,16 +663,30 @@ def api_backup_cleanup():
 def api_alert_smtp_save():
     data = request.get_json(force=True) or {}
     cfg  = load_config()
-    cfg.setdefault("enterprise", {}).setdefault("notifications", {})["smtp"] = {
-        "host":     data.get("host", ""),
-        "port":     int(data.get("port", 587)),
-        "user":     data.get("user", ""),
-        "password": data.get("password", ""),
-        "from":     data.get("from", ""),
-        "to":       data.get("to", ""),
+    km   = _vault()
+
+    smtp = {
+        "host": data.get("host", ""),
+        "port": int(data.get("port", 587)),
+        "user": data.get("user", ""),
+        "from": data.get("from", ""),
+        "to":   data.get("to", ""),
     }
+
+    password = data.get("password", "")
+    if password:
+        if km:
+            # SMTP-Passwort verschlüsselt im Vault, nicht im Klartext in config.json
+            km.store_secret("SMTP_PASSWORD", password)
+            smtp["password_in_vault"] = True
+        else:
+            print("[!] Kein Vault entsperrt — SMTP-Passwort wird im Klartext gespeichert. "
+                  "Setze VAULT_PASSWORD für verschlüsselte Speicherung.")
+            smtp["password"] = password
+
+    cfg.setdefault("enterprise", {}).setdefault("notifications", {})["smtp"] = smtp
     save_config(cfg)
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "vault": km is not None})
 
 
 if __name__ == "__main__":
@@ -653,6 +703,20 @@ if __name__ == "__main__":
         if not _load_users():
             print("\n[!] Kein Benutzer angelegt — die Web-API ist vollständig gesperrt.")
             print("    Admin anlegen mit:  python -m modules.rbac init-admin")
+    except Exception:
+        pass
+
+    # Vault entsperren (falls VAULT_PASSWORD gesetzt) → Secrets als Env verfügbar
+    try:
+        from modules import key_manager
+        if key_manager.vault_available():
+            if key_manager.vault_status().get("vault_exists"):
+                key_manager.load_keys_to_env(key_manager.vault_password())
+                print("[Vault] 🔓 Secrets aus verschlüsseltem Vault geladen.")
+            else:
+                print("[Vault] 🔑 VAULT_PASSWORD gesetzt — neue Secrets werden verschlüsselt gespeichert.")
+        else:
+            print("[Vault] ⚠️  Kein VAULT_PASSWORD gesetzt — Secrets würden im Klartext in config.json landen.")
     except Exception:
         pass
 

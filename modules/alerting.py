@@ -41,9 +41,22 @@ def _load_smtp_config() -> dict:
     try:
         with open("config.json", "r", encoding="utf-8") as f:
             cfg = json.load(f)
-        return cfg.get("enterprise", {}).get("notifications", {}).get("smtp", {})
+        smtp = dict(cfg.get("enterprise", {}).get("notifications", {}).get("smtp", {}))
     except Exception:
-        return {}
+        smtp = {}
+
+    # Passwort bevorzugt aus dem verschlüsselten Vault (Klartext in config.json
+    # ist nur noch Legacy-Fallback). ISO 27001 A.10
+    if not smtp.get("password"):
+        try:
+            from modules.key_manager import get_secret
+            pw = get_secret("SMTP_PASSWORD")
+            if pw:
+                smtp["password"] = pw
+        except Exception:
+            pass
+
+    return smtp
 
 
 def _smtp_configured(smtp: dict) -> bool:

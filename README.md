@@ -10,6 +10,7 @@
 [![ISO 27001](https://img.shields.io/badge/ISO_27001-Compliant-0078D4?style=for-the-badge)](https://www.iso.org/isoiec-27001-information-security.html)
 [![DSGVO](https://img.shields.io/badge/DSGVO-Konform-009900?style=for-the-badge)](https://dsgvo-gesetz.de)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![CI](https://github.com/ghostvenumai/ghostvenumaiagentsfinal/actions/workflows/ci.yml/badge.svg)](https://github.com/ghostvenumai/ghostvenumaiagentsfinal/actions/workflows/ci.yml)
 
 **Defensive AI-powered network analysis platform with autonomous agents, enterprise compliance and encrypted vault.**
 
